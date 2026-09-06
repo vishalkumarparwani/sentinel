@@ -20,7 +20,6 @@ export default function Issues() {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingItem, setEditingItem] = useState(null);
 
-  // Issue row highlight
   const location = useLocation();
   const navigate = useNavigate();
 

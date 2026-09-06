@@ -36,7 +36,9 @@ const defaultIssue = {
 
 function normalizeSteps(steps) {
   if (Array.isArray(steps)) {
-    return steps.filter(Boolean).map((step) => String(step).trim());
+    return steps
+      .filter(Boolean)
+      .map((step) => String(step).trim());
   }
 
   if (typeof steps === "string") {
@@ -124,7 +126,7 @@ export default function Triage() {
   }
 
   function handleSaveEdit() {
-    if (!editedIssue?.title.trim()) {
+    if (!editedIssue?.title?.trim()) {
       setError("Issue title cannot be empty.");
       return;
     }
@@ -186,12 +188,19 @@ export default function Triage() {
         title: issue.title.trim(),
         description: issue.description?.trim() || "",
         service: issue.service?.trim() || "",
-        reproduction_steps: normalizeSteps(issue.reproduction_steps),
+
+        // Backend expects a string, while the UI uses an array.
+        reproduction_steps: normalizeSteps(
+          issue.reproduction_steps
+        ).join("\n"),
+
         priority: issue.priority || "Medium",
         severity: issue.severity || "P3",
         status: issue.status || "planning",
         due_date: issue.due_date || null,
       };
+
+      console.log("Creating issue payload:", payload);
 
       await createIssue(payload);
       setSaved(true);
@@ -237,7 +246,9 @@ export default function Triage() {
 
           <div className="min-w-0">
             <p className="font-semibold">Something went wrong</p>
-            <p className="mt-0.5 text-rose-400/80">{error}</p>
+            <p className="mt-0.5 text-rose-400/80">
+              {error}
+            </p>
           </div>
 
           <button
@@ -274,9 +285,7 @@ export default function Triage() {
             <textarea
               value={text}
               onChange={(e) => setText(e.target.value)}
-              placeholder={
-                "Paste a raw error message, stack trace, customer report, or bug description here..."
-              }
+              placeholder="Paste a raw error message, stack trace, customer report, or bug description here..."
               rows={14}
               disabled={loading}
               className="w-full resize-none rounded-lg border border-theme-border/80 bg-theme-primary p-3 font-mono text-xs leading-relaxed text-theme-text placeholder-theme-muted outline-none transition-all focus:border-amber-500/50 focus:ring-1 focus:ring-amber-500/20 disabled:cursor-not-allowed disabled:opacity-60"
@@ -362,10 +371,7 @@ export default function Triage() {
               )}
             </div>
 
-            {/* ===================================================== */}
-            {/* EMPTY STATE                                            */}
-            {/* ===================================================== */}
-
+            {/* EMPTY STATE */}
             {!issue && !loading && !error && (
               <div className="flex h-72 flex-col items-center justify-center space-y-2 p-6 text-center">
                 <div className="flex h-11 w-11 items-center justify-center rounded-full border border-theme-border bg-theme-tertiary/50 text-theme-muted">
@@ -383,10 +389,7 @@ export default function Triage() {
               </div>
             )}
 
-            {/* ===================================================== */}
-            {/* ERROR STATE                                            */}
-            {/* ===================================================== */}
-
+            {/* ERROR STATE */}
             {error && !issue && !loading && (
               <div className="flex h-72 flex-col items-center justify-center space-y-2 p-6 text-center">
                 <div className="flex h-11 w-11 items-center justify-center rounded-full bg-rose-500/10 text-rose-400">
@@ -403,10 +406,7 @@ export default function Triage() {
               </div>
             )}
 
-            {/* ===================================================== */}
-            {/* LOADING STATE                                          */}
-            {/* ===================================================== */}
-
+            {/* LOADING STATE */}
             {loading && (
               <div className="flex h-72 flex-col items-center justify-center space-y-3">
                 <div className="flex h-12 w-12 items-center justify-center rounded-full bg-amber-500/10">
@@ -425,10 +425,7 @@ export default function Triage() {
               </div>
             )}
 
-            {/* ===================================================== */}
-            {/* NO ISSUE STATE                                         */}
-            {/* ===================================================== */}
-
+            {/* NO ISSUE STATE */}
             {issue && !loading && noIssueFound && (
               <div className="flex h-72 flex-col items-center justify-center space-y-2 p-6 text-center">
                 <div className="flex h-11 w-11 items-center justify-center rounded-full bg-theme-tertiary/50 text-theme-muted">
@@ -446,213 +443,216 @@ export default function Triage() {
               </div>
             )}
 
-            {/* ===================================================== */}
-            {/* EDIT MODE                                              */}
-            {/* ===================================================== */}
-
-            {issue && !loading && !noIssueFound && isEditing && editedIssue && (
-              <div className="mt-4 space-y-4">
-                {/* Title */}
-                <div className="space-y-1.5">
-                  <label className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wider text-theme-muted">
-                    <FileText className="h-3 w-3" />
-                    Issue Title
-                  </label>
-
-                  <input
-                    type="text"
-                    value={editedIssue.title}
-                    onChange={(e) =>
-                      updateEditedField("title", e.target.value)
-                    }
-                    className="w-full rounded-lg border border-theme-border bg-theme-primary px-3 py-2 text-sm font-semibold text-theme-text outline-none transition-colors placeholder-theme-muted focus:border-sky-500/50 focus:ring-1 focus:ring-sky-500/10"
-                    placeholder="Issue title"
-                  />
-                </div>
-
-                {/* Description */}
-                <div className="space-y-1.5">
-                  <label className="text-[10px] font-semibold uppercase tracking-wider text-theme-muted">
-                    Description
-                  </label>
-
-                  <textarea
-                    rows={3}
-                    value={editedIssue.description}
-                    onChange={(e) =>
-                      updateEditedField(
-                        "description",
-                        e.target.value
-                      )
-                    }
-                    className="w-full resize-y rounded-lg border border-theme-border bg-theme-primary px-3 py-2 text-xs leading-relaxed text-theme-text outline-none transition-colors placeholder-theme-muted focus:border-sky-500/50 focus:ring-1 focus:ring-sky-500/10"
-                    placeholder="Describe the issue..."
-                  />
-                </div>
-
-                {/* Service / Priority / Severity */}
-                <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-                  {/* Service */}
+            {/* EDIT MODE */}
+            {issue &&
+              !loading &&
+              !noIssueFound &&
+              isEditing &&
+              editedIssue && (
+                <div className="mt-4 space-y-4">
+                  {/* Title */}
                   <div className="space-y-1.5">
-                    <label className="text-[10px] font-semibold uppercase tracking-wider text-theme-muted">
-                      Service
+                    <label className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wider text-theme-muted">
+                      <FileText className="h-3 w-3" />
+                      Issue Title
                     </label>
 
                     <input
                       type="text"
-                      value={editedIssue.service}
+                      value={editedIssue.title || ""}
                       onChange={(e) =>
                         updateEditedField(
-                          "service",
+                          "title",
                           e.target.value
                         )
                       }
-                      className="w-full rounded-lg border border-theme-border bg-theme-primary px-3 py-2 text-xs text-theme-text outline-none transition-colors placeholder-theme-muted focus:border-sky-500/50"
-                      placeholder="Service"
+                      className="w-full rounded-lg border border-theme-border bg-theme-primary px-3 py-2 text-sm font-semibold text-theme-text outline-none transition-colors placeholder-theme-muted focus:border-sky-500/50 focus:ring-1 focus:ring-sky-500/10"
+                      placeholder="Issue title"
                     />
                   </div>
 
-                  {/* Priority */}
+                  {/* Description */}
                   <div className="space-y-1.5">
                     <label className="text-[10px] font-semibold uppercase tracking-wider text-theme-muted">
-                      Priority
+                      Description
                     </label>
 
-                    <div className="relative">
-                      <select
-                        value={editedIssue.priority}
+                    <textarea
+                      rows={3}
+                      value={editedIssue.description || ""}
+                      onChange={(e) =>
+                        updateEditedField(
+                          "description",
+                          e.target.value
+                        )
+                      }
+                      className="w-full resize-y rounded-lg border border-theme-border bg-theme-primary px-3 py-2 text-xs leading-relaxed text-theme-text outline-none transition-colors placeholder-theme-muted focus:border-sky-500/50 focus:ring-1 focus:ring-sky-500/10"
+                      placeholder="Describe the issue..."
+                    />
+                  </div>
+
+                  {/* Service / Priority / Severity */}
+                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+                    {/* Service */}
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] font-semibold uppercase tracking-wider text-theme-muted">
+                        Service
+                      </label>
+
+                      <input
+                        type="text"
+                        value={editedIssue.service || ""}
                         onChange={(e) =>
                           updateEditedField(
-                            "priority",
+                            "service",
                             e.target.value
                           )
                         }
-                        className="w-full appearance-none rounded-lg border border-theme-border bg-theme-primary px-3 py-2 pr-8 text-xs text-theme-text outline-none transition-colors focus:border-sky-500/50"
-                      >
-                        <option value="High">High</option>
-                        <option value="Medium">Medium</option>
-                        <option value="Low">Low</option>
-                      </select>
+                        className="w-full rounded-lg border border-theme-border bg-theme-primary px-3 py-2 text-xs text-theme-text outline-none transition-colors placeholder-theme-muted focus:border-sky-500/50"
+                        placeholder="Service"
+                      />
+                    </div>
 
-                      <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-theme-muted" />
+                    {/* Priority */}
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] font-semibold uppercase tracking-wider text-theme-muted">
+                        Priority
+                      </label>
+
+                      <div className="relative">
+                        <select
+                          value={editedIssue.priority || "Medium"}
+                          onChange={(e) =>
+                            updateEditedField(
+                              "priority",
+                              e.target.value
+                            )
+                          }
+                          className="w-full appearance-none rounded-lg border border-theme-border bg-theme-primary px-3 py-2 pr-8 text-xs text-theme-text outline-none transition-colors focus:border-sky-500/50"
+                        >
+                          <option value="High">High</option>
+                          <option value="Medium">Medium</option>
+                          <option value="Low">Low</option>
+                        </select>
+
+                        <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-theme-muted" />
+                      </div>
+                    </div>
+
+                    {/* Severity */}
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] font-semibold uppercase tracking-wider text-theme-muted">
+                        Severity
+                      </label>
+
+                      <div className="relative">
+                        <select
+                          value={editedIssue.severity || "P3"}
+                          onChange={(e) =>
+                            updateEditedField(
+                              "severity",
+                              e.target.value
+                            )
+                          }
+                          className="w-full appearance-none rounded-lg border border-theme-border bg-theme-primary px-3 py-2 pr-8 text-xs text-theme-text outline-none transition-colors focus:border-sky-500/50"
+                        >
+                          <option value="P1">P1 - Critical</option>
+                          <option value="P2">P2 - High</option>
+                          <option value="P3">P3 - Medium</option>
+                          <option value="P4">P4 - Low</option>
+                        </select>
+
+                        <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-theme-muted" />
+                      </div>
                     </div>
                   </div>
 
-                  {/* Severity */}
-                  <div className="space-y-1.5">
-                    <label className="text-[10px] font-semibold uppercase tracking-wider text-theme-muted">
-                      Severity
-                    </label>
+                  {/* Reproduction Steps */}
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <label className="text-[10px] font-semibold uppercase tracking-wider text-theme-muted">
+                        Reproduction Steps
+                      </label>
 
-                    <div className="relative">
-                      <select
-                        value={editedIssue.severity}
-                        onChange={(e) =>
-                          updateEditedField(
-                            "severity",
-                            e.target.value
+                      <button
+                        type="button"
+                        onClick={addStep}
+                        className="text-[10px] font-medium text-sky-400 transition-colors hover:text-sky-300"
+                      >
+                        + Add step
+                      </button>
+                    </div>
+
+                    <div className="space-y-2">
+                      {editedIssue.reproduction_steps.length === 0 ? (
+                        <div className="rounded-lg border border-dashed border-theme-border px-3 py-4 text-center text-[11px] text-theme-muted">
+                          No reproduction steps.
+                        </div>
+                      ) : (
+                        editedIssue.reproduction_steps.map(
+                          (step, index) => (
+                            <div
+                              key={index}
+                              className="flex items-center gap-2"
+                            >
+                              <span className="w-5 shrink-0 text-center font-mono text-[10px] text-theme-muted">
+                                {index + 1}.
+                              </span>
+
+                              <input
+                                type="text"
+                                value={step || ""}
+                                onChange={(e) =>
+                                  updateStep(
+                                    index,
+                                    e.target.value
+                                  )
+                                }
+                                className="min-w-0 flex-1 rounded-lg border border-theme-border bg-theme-primary px-3 py-2 text-xs text-theme-text outline-none transition-colors focus:border-sky-500/50"
+                                placeholder={`Step ${index + 1}`}
+                              />
+
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  removeStep(index)
+                                }
+                                className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-theme-muted transition-colors hover:bg-rose-500/10 hover:text-rose-400"
+                                aria-label={`Remove step ${index + 1}`}
+                                title="Remove step"
+                              >
+                                <XCircle className="h-3.5 w-3.5" />
+                              </button>
+                            </div>
                           )
-                        }
-                        className="w-full appearance-none rounded-lg border border-theme-border bg-theme-primary px-3 py-2 pr-8 text-xs text-theme-text outline-none transition-colors focus:border-sky-500/50"
-                      >
-                        <option value="P1">P1 - Critical</option>
-                        <option value="P2">P2 - High</option>
-                        <option value="P3">P3 - Medium</option>
-                        <option value="P4">P4 - Low</option>
-                      </select>
-
-                      <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-theme-muted" />
+                        )
+                      )}
                     </div>
                   </div>
-                </div>
 
-                {/* Reproduction Steps */}
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <label className="text-[10px] font-semibold uppercase tracking-wider text-theme-muted">
-                      Reproduction Steps
-                    </label>
+                  {/* Edit Actions */}
+                  <div className="flex items-center justify-end gap-2 border-t border-theme-border/60 pt-3">
+                    <button
+                      type="button"
+                      onClick={handleCancelEdit}
+                      className="rounded-lg px-3 py-1.5 text-xs font-medium text-theme-muted transition-colors hover:bg-theme-tertiary hover:text-theme-text"
+                    >
+                      Cancel
+                    </button>
 
                     <button
                       type="button"
-                      onClick={addStep}
-                      className="text-[10px] font-medium text-sky-400 transition-colors hover:text-sky-300"
+                      onClick={handleSaveEdit}
+                      className="flex items-center gap-1.5 rounded-lg bg-theme-text px-3.5 py-1.5 text-xs font-semibold text-theme-primary transition-opacity hover:opacity-90"
                     >
-                      + Add step
+                      <Save className="h-3.5 w-3.5" />
+                      Save Changes
                     </button>
                   </div>
-
-                  <div className="space-y-2">
-                    {editedIssue.reproduction_steps.length === 0 ? (
-                      <div className="rounded-lg border border-dashed border-theme-border px-3 py-4 text-center text-[11px] text-theme-muted">
-                        No reproduction steps.
-                      </div>
-                    ) : (
-                      editedIssue.reproduction_steps.map(
-                        (step, index) => (
-                          <div
-                            key={index}
-                            className="flex items-center gap-2"
-                          >
-                            <span className="w-5 shrink-0 text-center font-mono text-[10px] text-theme-muted">
-                              {index + 1}.
-                            </span>
-
-                            <input
-                              type="text"
-                              value={step}
-                              onChange={(e) =>
-                                updateStep(
-                                  index,
-                                  e.target.value
-                                )
-                              }
-                              className="min-w-0 flex-1 rounded-lg border border-theme-border bg-theme-primary px-3 py-2 text-xs text-theme-text outline-none transition-colors focus:border-sky-500/50"
-                              placeholder={`Step ${index + 1}`}
-                            />
-
-                            <button
-                              type="button"
-                              onClick={() => removeStep(index)}
-                              className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-theme-muted transition-colors hover:bg-rose-500/10 hover:text-rose-400"
-                              aria-label={`Remove step ${index + 1}`}
-                              title="Remove step"
-                            >
-                              <XCircle className="h-3.5 w-3.5" />
-                            </button>
-                          </div>
-                        )
-                      )
-                    )}
-                  </div>
                 </div>
+              )}
 
-                {/* Edit Actions */}
-                <div className="flex items-center justify-end gap-2 border-t border-theme-border/60 pt-3">
-                  <button
-                    type="button"
-                    onClick={handleCancelEdit}
-                    className="rounded-lg px-3 py-1.5 text-xs font-medium text-theme-muted transition-colors hover:bg-theme-tertiary hover:text-theme-text"
-                  >
-                    Cancel
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={handleSaveEdit}
-                    className="flex items-center gap-1.5 rounded-lg bg-theme-text px-3.5 py-1.5 text-xs font-semibold text-theme-primary transition-opacity hover:opacity-90"
-                  >
-                    <Save className="h-3.5 w-3.5" />
-                    Save Changes
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {/* ===================================================== */}
-            {/* READ-ONLY RESULT                                       */}
-            {/* ===================================================== */}
-
+            {/* READ-ONLY RESULT */}
             {issue &&
               !loading &&
               !noIssueFound &&
@@ -784,59 +784,59 @@ export default function Triage() {
               )}
           </div>
 
-          {/* ======================================================= */}
-          {/* BOTTOM ACTIONS                                          */}
-          {/* ======================================================= */}
-
-          {issue && !loading && !noIssueFound && !isEditing && (
-            <div className="mt-6 flex flex-col gap-3 border-t border-theme-border/80 pt-4 sm:flex-row sm:items-center sm:justify-between">
-              <div>
-                {saved ? (
-                  <div className="flex items-center gap-1.5 text-[11px] text-emerald-500">
-                    <Check className="h-3.5 w-3.5" />
-                    Issue created successfully.
-                  </div>
-                ) : (
-                  <p className="text-[10px] text-theme-muted">
-                    Review the AI output before creating the issue.
-                  </p>
-                )}
-              </div>
-
-              <div className="flex items-center gap-2">
-                {saved ? (
-                  <button
-                    type="button"
-                    onClick={() => navigate("/issues")}
-                    className="flex items-center gap-1.5 rounded-lg border border-theme-border bg-theme-primary px-3.5 py-2 text-xs font-semibold text-theme-text transition-colors hover:bg-theme-tertiary"
-                  >
-                    View Issues
-                    <ArrowRight className="h-3.5 w-3.5" />
-                  </button>
-                ) : (
-                  <>
-                    <button
-                      type="button"
-                      onClick={handleEdit}
-                      className="flex items-center gap-1.5 rounded-lg border border-theme-border bg-theme-primary px-3.5 py-2 text-xs font-medium text-theme-muted transition-colors hover:bg-theme-tertiary hover:text-theme-text"
-                    >
-                      <Pencil className="h-3.5 w-3.5" />
-                      Edit Issue
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={handleCreateIssue}
-                      className="flex items-center gap-1.5 rounded-lg bg-theme-text px-3.5 py-2 text-xs font-semibold text-theme-primary shadow-sm transition-opacity hover:opacity-90"
-                    >
+          {/* BOTTOM ACTIONS */}
+          {issue &&
+            !loading &&
+            !noIssueFound &&
+            !isEditing && (
+              <div className="mt-6 flex flex-col gap-3 border-t border-theme-border/80 pt-4 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  {saved ? (
+                    <div className="flex items-center gap-1.5 text-[11px] text-emerald-500">
                       <Check className="h-3.5 w-3.5" />
-                      Create Issue
+                      Issue created successfully.
+                    </div>
+                  ) : (
+                    <p className="text-[10px] text-theme-muted">
+                      Review the AI output before creating the issue.
+                    </p>
+                  )}
+                </div>
+
+                <div className="flex items-center gap-2">
+                  {saved ? (
+                    <button
+                      type="button"
+                      onClick={() => navigate("/issues")}
+                      className="flex items-center gap-1.5 rounded-lg border border-theme-border bg-theme-primary px-3.5 py-2 text-xs font-semibold text-theme-text transition-colors hover:bg-theme-tertiary"
+                    >
+                      View Issues
+                      <ArrowRight className="h-3.5 w-3.5" />
                     </button>
-                  </>
-                )}
+                  ) : (
+                    <>
+                      <button
+                        type="button"
+                        onClick={handleEdit}
+                        className="flex items-center gap-1.5 rounded-lg border border-theme-border bg-theme-primary px-3.5 py-2 text-xs font-medium text-theme-muted transition-colors hover:bg-theme-tertiary hover:text-theme-text"
+                      >
+                        <Pencil className="h-3.5 w-3.5" />
+                        Edit Issue
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={handleCreateIssue}
+                        className="flex items-center gap-1.5 rounded-lg bg-theme-text px-3.5 py-2 text-xs font-semibold text-theme-primary shadow-sm transition-opacity hover:opacity-90"
+                      >
+                        <Check className="h-3.5 w-3.5" />
+                        Create Issue
+                      </button>
+                    </>
+                  )}
+                </div>
               </div>
-            </div>
-          )}
+            )}
         </div>
       </div>
     </div>

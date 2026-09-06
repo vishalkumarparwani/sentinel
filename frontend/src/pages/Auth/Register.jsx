@@ -51,7 +51,6 @@ export default function Register() {
 
   return (
     <div className="relative min-h-screen flex items-center justify-center bg-theme-primary px-4 py-8 overflow-hidden">
-      {/* Theme Toggle */}
       <button
         type="button"
         onClick={toggleTheme}
@@ -62,13 +61,11 @@ export default function Register() {
         {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
       </button>
 
-      {/* Subtle Background Accent */}
       <div className="pointer-events-none absolute inset-0">
         <div className="absolute left-1/2 top-0 h-96 w-96 -translate-x-1/2 rounded-full bg-amber-500/5 blur-3xl" />
       </div>
 
       <div className="relative w-full max-w-sm">
-        {/* Branding */}
         <div className="mb-8 text-center">
           <div className="mx-auto mb-4 flex h-11 w-11 items-center justify-center rounded-xl border border-theme-border bg-theme-secondary shadow-sm">
             <span className="text-lg font-bold text-amber-400">S</span>
@@ -83,7 +80,6 @@ export default function Register() {
           </p>
         </div>
 
-        {/* Register Card */}
         <form
           onSubmit={handleSubmit}
           className="space-y-5 rounded-2xl border border-theme-border bg-theme-secondary p-6 shadow-xl"
@@ -104,7 +100,6 @@ export default function Register() {
             </div>
           )}
 
-          {/* Email */}
           <div className="space-y-1.5">
             <label
               htmlFor="email"
@@ -125,7 +120,6 @@ export default function Register() {
             />
           </div>
 
-          {/* Password */}
           <div className="space-y-1.5">
             <label
               htmlFor="password"
@@ -162,7 +156,6 @@ export default function Register() {
             </p>
           </div>
 
-          {/* Submit */}
           <button
             type="submit"
             disabled={submitting}
@@ -171,7 +164,6 @@ export default function Register() {
             {submitting ? 'Creating account...' : 'Create Account'}
           </button>
 
-          {/* Login */}
           <p className="text-center text-xs text-theme-muted">
             Already have an account?{' '}
             <Link
@@ -183,7 +175,6 @@ export default function Register() {
           </p>
         </form>
 
-        {/* Footer */}
         <p className="mt-6 text-center text-[11px] text-theme-muted/60">
           Sentinel · AI-native issue intelligence
         </p>
