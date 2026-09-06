@@ -9,14 +9,14 @@ export default function Navbar({
   onToggleAI,
 }) {
   return (
-    <header className="h-14 border-b border-zinc-800/80 bg-zinc-950/80 backdrop-blur px-4 md:px-8 flex items-center justify-between sticky top-0 z-30">
+    <header className="h-14 border-b border-theme-border bg-theme-primary/80 backdrop-blur px-4 md:px-8 flex items-center justify-between sticky top-0 z-30">
       <div className="flex items-center gap-3">
         <button
           onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-          className="md:hidden p-2 rounded-lg hover:bg-zinc-900 transition-colors"
+          className="md:hidden p-2 rounded-lg hover:bg-theme-secondary transition-colors"
           aria-label="Toggle Sidebar"
         >
-          <Menu className="w-5 h-5 text-zinc-300" />
+          <Menu className="w-5 h-5 text-theme-muted" />
         </button>
 
         <SearchBar />
@@ -25,10 +25,10 @@ export default function Navbar({
       <div className="flex items-center gap-4">
         <button
           onClick={onToggleAI}
-          className="flex items-center gap-2 bg-zinc-900 hover:bg-zinc-800 border border-zinc-700/60 text-zinc-200 text-xs px-3 py-1.5 rounded-lg transition-colors"
+          className="flex items-center gap-2 bg-theme-secondary hover:bg-theme-tertiary border border-theme-border text-theme-text text-xs px-3 py-1.5 rounded-lg transition-colors"
         >
           <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-          <span className="hidden sm:inline">Contexture Copilot</span>
+          <span className="hidden sm:inline">Sentinel Copilot</span>
         </button>
 
         <UserMenu />

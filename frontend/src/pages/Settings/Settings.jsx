@@ -1,6 +1,14 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Sliders, Key, Sun, Moon, Bot, LogOut, User as UserIcon } from "lucide-react";
+import {
+  Sliders,
+  Key,
+  Sun,
+  Moon,
+  Bot,
+  LogOut,
+  User as UserIcon,
+} from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 
 export default function Settings() {
@@ -10,6 +18,7 @@ export default function Settings() {
 
   async function handleThemeChange(theme) {
     setError(null);
+
     try {
       await setTheme(theme);
     } catch (err) {
@@ -25,10 +34,11 @@ export default function Settings() {
   return (
     <div className="max-w-4xl mx-auto space-y-8">
       <div>
-        <h1 className="text-xl font-bold tracking-tight text-zinc-100">
-          Contexture Settings
+        <h1 className="text-xl font-bold tracking-tight text-theme-text">
+          Sentinel Settings
         </h1>
-        <p className="text-xs text-zinc-400 mt-1">
+
+        <p className="text-xs text-theme-muted mt-1">
           Manage your account and workspace preferences.
         </p>
       </div>
@@ -38,21 +48,33 @@ export default function Settings() {
           {error}
         </div>
       )}
-      
-      <div className="bg-zinc-900/60 border border-zinc-800/80 rounded-xl p-6 space-y-5">
-        <div className="flex items-center gap-3 pb-3 border-b border-zinc-800/80">
+
+      {/* Account */}
+      <div className="bg-theme-secondary/60 border border-theme-border rounded-xl p-6 space-y-5">
+        <div className="flex items-center gap-3 pb-3 border-b border-theme-border">
           <div className="p-2 rounded-lg bg-emerald-500/10 text-emerald-400">
             <UserIcon className="w-5 h-5" />
           </div>
+
           <div>
-            <h2 className="text-sm font-semibold text-zinc-100">Account</h2>
-            <p className="text-xs text-zinc-500">Your Contexture login</p>
+            <h2 className="text-sm font-semibold text-theme-text">
+              Account
+            </h2>
+
+            <p className="text-xs text-theme-muted">
+              Your Contexture login
+            </p>
           </div>
         </div>
 
         <div className="space-y-1.5">
-          <label className="text-xs font-medium text-zinc-300">Email</label>
-          <p className="text-sm text-zinc-100">{user?.email}</p>
+          <label className="text-xs font-medium text-theme-muted">
+            Email
+          </label>
+
+          <p className="text-sm text-theme-text">
+            {user?.email}
+          </p>
         </div>
 
         <button
@@ -64,14 +86,21 @@ export default function Settings() {
         </button>
       </div>
 
-      <div className="bg-zinc-900/60 border border-zinc-800/80 rounded-xl p-6 space-y-5">
-        <div className="flex items-center gap-3 pb-3 border-b border-zinc-800/80">
+      {/* Appearance */}
+      <div className="bg-theme-secondary/60 border border-theme-border rounded-xl p-6 space-y-5">
+        <div className="flex items-center gap-3 pb-3 border-b border-theme-border">
           <div className="p-2 rounded-lg bg-indigo-500/10 text-indigo-400">
             <Sliders className="w-5 h-5" />
           </div>
+
           <div>
-            <h2 className="text-sm font-semibold text-zinc-100">Appearance</h2>
-            <p className="text-xs text-zinc-500">Saved to your account</p>
+            <h2 className="text-sm font-semibold text-theme-text">
+              Appearance
+            </h2>
+
+            <p className="text-xs text-theme-muted">
+              Saved to your account
+            </p>
           </div>
         </div>
 
@@ -80,8 +109,8 @@ export default function Settings() {
             onClick={() => handleThemeChange("dark")}
             className={`p-4 rounded-xl border flex items-center gap-3 text-xs font-medium transition-all cursor-pointer ${
               user?.theme === "dark"
-                ? "border-amber-500/50 bg-zinc-900 text-zinc-100 shadow-md"
-                : "border-zinc-800 bg-zinc-950 text-zinc-500 hover:text-zinc-300"
+                ? "border-amber-500/50 bg-theme-secondary text-theme-text shadow-md"
+                : "border-theme-border bg-theme-primary text-theme-muted hover:text-theme-text hover:bg-theme-secondary"
             }`}
           >
             <Moon className="w-4 h-4 text-amber-400" />
@@ -92,8 +121,8 @@ export default function Settings() {
             onClick={() => handleThemeChange("light")}
             className={`p-4 rounded-xl border flex items-center gap-3 text-xs font-medium transition-all cursor-pointer ${
               user?.theme === "light"
-                ? "border-amber-500/50 bg-zinc-100 text-zinc-900 shadow-md"
-                : "border-zinc-800 bg-zinc-950 text-zinc-500 hover:text-zinc-300"
+                ? "border-amber-500/50 bg-theme-tertiary text-theme-text shadow-md"
+                : "border-theme-border bg-theme-primary text-theme-muted hover:text-theme-text hover:bg-theme-secondary"
             }`}
           >
             <Sun className="w-4 h-4 text-indigo-600" />
@@ -102,38 +131,50 @@ export default function Settings() {
         </div>
       </div>
 
-      <div className="bg-zinc-900/30 border border-zinc-800/50 rounded-xl p-6 space-y-5 opacity-60">
-        <div className="flex items-center gap-3 pb-3 border-b border-zinc-800/50">
+      {/* LLM Triage Engine */}
+      <div className="bg-theme-secondary/30 border border-theme-border rounded-xl p-6 space-y-5 opacity-60">
+        <div className="flex items-center gap-3 pb-3 border-b border-theme-border">
           <div className="p-2 rounded-lg bg-amber-500/10 text-amber-400">
             <Bot className="w-5 h-5" />
           </div>
+
           <div>
-            <h2 className="text-sm font-semibold text-zinc-100 flex items-center gap-2">
+            <h2 className="text-sm font-semibold text-theme-text flex items-center gap-2">
               LLM Triage Engine
-              <span className="text-[10px] px-1.5 py-0.5 rounded bg-zinc-800 text-zinc-500 font-normal">
+
+              <span className="text-[10px] px-1.5 py-0.5 rounded bg-theme-tertiary text-theme-muted font-normal">
                 Coming Soon
               </span>
             </h2>
-            <p className="text-xs text-zinc-500">Model selection for bug extraction & severity rating</p>
+
+            <p className="text-xs text-theme-muted">
+              Model selection for bug extraction & severity rating
+            </p>
           </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-1.5">
-            <label className="text-xs font-medium text-zinc-500">Provider</label>
+            <label className="text-xs font-medium text-theme-muted">
+              Provider
+            </label>
+
             <select
               disabled
-              className="w-full bg-zinc-950 border border-zinc-800 rounded-lg p-2.5 text-xs text-zinc-600 cursor-not-allowed"
+              className="w-full bg-theme-primary border border-theme-border rounded-lg p-2.5 text-xs text-theme-muted cursor-not-allowed"
             >
               <option>Groq (Llama 3.3 70B)</option>
             </select>
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-xs font-medium text-zinc-500">Model Version</label>
+            <label className="text-xs font-medium text-theme-muted">
+              Model Version
+            </label>
+
             <select
               disabled
-              className="w-full bg-zinc-950 border border-zinc-800 rounded-lg p-2.5 text-xs text-zinc-600 cursor-not-allowed"
+              className="w-full bg-theme-primary border border-theme-border rounded-lg p-2.5 text-xs text-theme-muted cursor-not-allowed"
             >
               <option>llama-3.3-70b-versatile</option>
             </select>
@@ -141,14 +182,16 @@ export default function Settings() {
         </div>
 
         <div className="space-y-1.5">
-          <label className="text-xs font-medium text-zinc-500 flex items-center gap-1.5">
-            <Key className="w-3.5 h-3.5" /> API Secret Key
+          <label className="text-xs font-medium text-theme-muted flex items-center gap-1.5">
+            <Key className="w-3.5 h-3.5" />
+            API Secret Key
           </label>
+
           <input
             disabled
             type="password"
             value="Configured via server environment"
-            className="w-full bg-zinc-950 border border-zinc-800 rounded-lg p-2.5 text-xs text-zinc-600 cursor-not-allowed"
+            className="w-full bg-theme-primary border border-theme-border rounded-lg p-2.5 text-xs text-theme-muted cursor-not-allowed"
           />
         </div>
       </div>

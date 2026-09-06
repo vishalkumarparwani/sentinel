@@ -45,11 +45,12 @@ export default function Pomodoro() {
   const focusMinutesRemainder = totalFocusMinutes % 60;
 
   return (
-    <div className="rounded-2xl border border-zinc-800/80 bg-zinc-900/30 p-6">
-      <div className="flex items-center justify-between border-b border-zinc-800 pb-4">
+    <div className="rounded-2xl border border-theme-border/80 bg-theme-secondary/30 p-6">
+      <div className="flex items-center justify-between border-b border-theme-border pb-4">
         <div className="flex items-center gap-2">
           <Timer className="h-4 w-4 text-indigo-400" />
-          <h3 className="text-sm font-semibold text-zinc-100">
+
+          <h3 className="text-sm font-semibold text-theme-text">
             Deep Work Session
           </h3>
         </div>
@@ -60,7 +61,7 @@ export default function Pomodoro() {
       </div>
 
       <div className="mt-8 flex flex-col items-center">
-        <h2 className="text-6xl font-bold tracking-tight text-zinc-100">
+        <h2 className="text-6xl font-bold tracking-tight text-theme-text">
           {minutes}:{seconds.toString().padStart(2, "0")}
         </h2>
 
@@ -69,7 +70,7 @@ export default function Pomodoro() {
           value={goal}
           onChange={(e) => setGoal(e.target.value)}
           placeholder="What are you focusing on?"
-          className="mt-3 w-full bg-transparent text-center text-xs text-zinc-400 placeholder-zinc-600 focus:outline-none"
+          className="mt-3 w-full bg-transparent text-center text-xs text-theme-muted placeholder-theme-muted focus:outline-none"
         />
 
         <div className="mt-8 flex gap-3">
@@ -78,8 +79,8 @@ export default function Pomodoro() {
             disabled={isRunning}
             className={`rounded-xl p-3 transition-all ${
               isRunning
-                ? "cursor-not-allowed bg-zinc-800 text-zinc-600"
-                : "bg-zinc-100 text-zinc-950 hover:bg-zinc-200"
+                ? "cursor-not-allowed bg-theme-tertiary text-theme-muted"
+                : "bg-theme-tertiary text-theme-text hover:bg-theme-secondary"
             }`}
           >
             <Play size={18} />
@@ -90,8 +91,8 @@ export default function Pomodoro() {
             disabled={!isRunning}
             className={`rounded-xl p-3 transition-all ${
               !isRunning
-                ? "cursor-not-allowed bg-zinc-800 text-zinc-600"
-                : "bg-zinc-900 text-zinc-100 hover:bg-zinc-800"
+                ? "cursor-not-allowed bg-theme-tertiary text-theme-muted"
+                : "bg-theme-secondary text-theme-text hover:bg-theme-tertiary"
             }`}
           >
             <Pause size={18} />
@@ -99,31 +100,40 @@ export default function Pomodoro() {
 
           <button
             onClick={handleReset}
-            className="rounded-xl bg-zinc-900 p-3 text-zinc-100 transition-all hover:bg-zinc-800"
+            className="rounded-xl bg-theme-secondary p-3 text-theme-text transition-all hover:bg-theme-tertiary"
           >
             <RotateCcw size={18} />
           </button>
         </div>
       </div>
 
-      <div className="mt-8 space-y-4 border-t border-zinc-800 pt-5">
+      <div className="mt-8 space-y-4 border-t border-theme-border pt-5">
         <div className="flex items-center justify-between">
-          <span className="text-xs text-zinc-500">Completed Sessions</span>
-          <span className="text-sm font-semibold text-zinc-100">
+          <span className="text-xs text-theme-muted">
+            Completed Sessions
+          </span>
+
+          <span className="text-sm font-semibold text-theme-text">
             {completedSessions}
           </span>
         </div>
 
         <div className="flex items-center justify-between">
-          <span className="text-xs text-zinc-500">Today's Focus Time</span>
-          <span className="text-sm font-semibold text-zinc-100">
+          <span className="text-xs text-theme-muted">
+            Today's Focus Time
+          </span>
+
+          <span className="text-sm font-semibold text-theme-text">
             {focusHours}h {focusMinutesRemainder}m
           </span>
         </div>
 
         {goal && (
           <div className="flex items-center justify-between">
-            <span className="text-xs text-zinc-500">Current Goal</span>
+            <span className="text-xs text-theme-muted">
+              Current Goal
+            </span>
+
             <span className="text-xs font-medium text-indigo-300 truncate max-w-140px">
               {goal}
             </span>

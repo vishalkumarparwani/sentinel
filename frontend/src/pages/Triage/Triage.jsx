@@ -1,5 +1,5 @@
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useState } from "react";
 import { createIssue, runTriage } from "../../api";
 import {
   Sparkles,
@@ -11,6 +11,11 @@ import {
   ShieldAlert,
   RotateCcw,
   XCircle,
+  Pencil,
+  Save,
+  FileText,
+  Brain,
+  ChevronDown,
 } from "lucide-react";
 
 const severityStyles = {
@@ -20,29 +25,77 @@ const severityStyles = {
   P4: "text-emerald-400 border-emerald-500/20 bg-emerald-500/10",
 };
 
+const defaultIssue = {
+  title: "",
+  description: "",
+  service: "",
+  priority: "Medium",
+  severity: "P3",
+  reproduction_steps: [],
+};
+
+function normalizeSteps(steps) {
+  if (Array.isArray(steps)) {
+    return steps.filter(Boolean).map((step) => String(step).trim());
+  }
+
+  if (typeof steps === "string") {
+    return steps
+      .split("\n")
+      .map((step) => step.trim())
+      .filter(Boolean);
+  }
+
+  return [];
+}
+
+function normalizeIssue(data) {
+  return {
+    ...defaultIssue,
+    ...data,
+    title: data?.title || "",
+    description: data?.description || "",
+    service: data?.service || "",
+    priority: data?.priority || "Medium",
+    severity: data?.severity || "P3",
+    reproduction_steps: normalizeSteps(data?.reproduction_steps),
+  };
+}
+
 export default function Triage() {
   const [text, setText] = useState("");
   const [loading, setLoading] = useState(false);
   const [issue, setIssue] = useState(null);
+  const [editedIssue, setEditedIssue] = useState(null);
+  const [isEditing, setIsEditing] = useState(false);
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState(null);
 
   const navigate = useNavigate();
 
   async function handleRunTriage() {
-    if (!text.trim()) return;
+    if (!text.trim() || loading) return;
 
     setLoading(true);
     setSaved(false);
     setError(null);
+    setIssue(null);
+    setEditedIssue(null);
+    setIsEditing(false);
 
     try {
       const result = await runTriage(text);
-      setIssue(result);
+      const normalized = normalizeIssue(result);
+
+      setIssue(normalized);
+      setEditedIssue(normalized);
     } catch (err) {
       console.error("AI Triage Error:", err);
-      setError(err?.message || "Failed to parse issue log. Please try again.");
-      setIssue(null);
+
+      setError(
+        err?.message ||
+          "Failed to parse issue log. Please check the input and try again."
+      );
     } finally {
       setLoading(false);
     }
@@ -51,13 +104,96 @@ export default function Triage() {
   function handleReset() {
     setText("");
     setIssue(null);
+    setEditedIssue(null);
     setSaved(false);
     setError(null);
+    setIsEditing(false);
+  }
+
+  function handleEdit() {
+    if (!issue) return;
+
+    setEditedIssue(normalizeIssue(issue));
+    setIsEditing(true);
+    setSaved(false);
+  }
+
+  function handleCancelEdit() {
+    setEditedIssue(normalizeIssue(issue));
+    setIsEditing(false);
+  }
+
+  function handleSaveEdit() {
+    if (!editedIssue?.title.trim()) {
+      setError("Issue title cannot be empty.");
+      return;
+    }
+
+    setError(null);
+    setIssue(normalizeIssue(editedIssue));
+    setIsEditing(false);
+  }
+
+  function updateEditedField(field, value) {
+    setEditedIssue((prev) => ({
+      ...prev,
+      [field]: value,
+    }));
+  }
+
+  function updateStep(index, value) {
+    setEditedIssue((prev) => {
+      const steps = [...prev.reproduction_steps];
+      steps[index] = value;
+
+      return {
+        ...prev,
+        reproduction_steps: steps,
+      };
+    });
+  }
+
+  function addStep() {
+    setEditedIssue((prev) => ({
+      ...prev,
+      reproduction_steps: [
+        ...prev.reproduction_steps,
+        "",
+      ],
+    }));
+  }
+
+  function removeStep(index) {
+    setEditedIssue((prev) => ({
+      ...prev,
+      reproduction_steps: prev.reproduction_steps.filter(
+        (_, stepIndex) => stepIndex !== index
+      ),
+    }));
   }
 
   async function handleCreateIssue() {
+    if (!issue?.title?.trim()) {
+      setError("Issue title is required.");
+      return;
+    }
+
     try {
-      await createIssue(issue);
+      setError(null);
+
+      const payload = {
+        ...issue,
+        title: issue.title.trim(),
+        description: issue.description?.trim() || "",
+        service: issue.service?.trim() || "",
+        reproduction_steps: normalizeSteps(issue.reproduction_steps),
+        priority: issue.priority || "Medium",
+        severity: issue.severity || "P3",
+        status: issue.status || "planning",
+        due_date: issue.due_date || null,
+      };
+
+      await createIssue(payload);
       setSaved(true);
     } catch (err) {
       console.error("Create failed:", err);
@@ -67,55 +203,105 @@ export default function Triage() {
 
   const noIssueFound = issue?.title === "No issue reported";
 
-  const steps = Array.isArray(issue?.reproduction_steps)
-    ? issue.reproduction_steps
-    : typeof issue?.reproduction_steps === "string"
-      ? issue.reproduction_steps.split("\n").filter(Boolean)
-      : [];
+  const steps = normalizeSteps(issue?.reproduction_steps);
+
+  const confidence =
+    typeof issue?.ai_confidence === "number"
+      ? Math.round(issue.ai_confidence * 100)
+      : null;
 
   return (
-    <div className="max-w-7xl mx-auto space-y-6">
+    <div className="mx-auto max-w-7xl space-y-6">
+      {/* Page Header */}
       <div>
-        <div className="flex items-center gap-2">
-          <h1 className="text-xl font-bold tracking-tight text-zinc-100">
+        <div className="flex flex-wrap items-center gap-2">
+          <h1 className="text-xl font-bold tracking-tight text-theme-text">
             AI Issue Triage
           </h1>
 
-          <span className="px-2 py-0.5 rounded-full text-[10px] font-mono bg-amber-500/10 text-amber-400 border border-amber-500/20">
+          <span className="rounded-full border border-amber-500/20 bg-amber-500/10 px-2 py-0.5 text-[10px] font-mono text-amber-400">
             LLM PARSER v1.0
           </span>
         </div>
 
-        <p className="text-xs text-zinc-400 mt-1">
-          Paste raw bug reports, Slack logs, or customer emails to extract structured, actionable issues.
+        <p className="mt-1 max-w-3xl text-xs text-theme-muted">
+          Paste raw bug reports, Slack logs, or customer emails to extract
+          structured, actionable issues.
         </p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Left Panel: Input Area */}
-        <div className="bg-zinc-900/60 border border-zinc-800/80 rounded-xl p-5 flex flex-col justify-between space-y-4">
+      {/* Global Error */}
+      {error && (
+        <div className="flex items-start gap-3 rounded-lg border border-rose-500/20 bg-rose-500/5 px-4 py-3 text-xs text-rose-400">
+          <XCircle className="mt-0.5 h-4 w-4 shrink-0" />
+
+          <div className="min-w-0">
+            <p className="font-semibold">Something went wrong</p>
+            <p className="mt-0.5 text-rose-400/80">{error}</p>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => setError(null)}
+            className="ml-auto shrink-0 rounded-md p-1 text-rose-400/70 transition-colors hover:bg-rose-500/10 hover:text-rose-400"
+            aria-label="Dismiss error"
+          >
+            <XCircle className="h-3.5 w-3.5" />
+          </button>
+        </div>
+      )}
+
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+        {/* ========================================================= */}
+        {/* LEFT PANEL — INPUT                                        */}
+        {/* ========================================================= */}
+
+        <div className="flex flex-col justify-between space-y-4 rounded-xl border border-theme-border/80 bg-theme-secondary/60 p-5">
           <div className="space-y-3">
-            <label className="text-xs font-semibold text-zinc-300 flex items-center gap-2">
-              <Terminal className="w-4 h-4 text-zinc-400" />
-              Raw Bug Log / Customer Ticket
-            </label>
+            <div className="flex items-center justify-between gap-3">
+              <label className="flex items-center gap-2 text-xs font-semibold text-theme-text">
+                <Terminal className="h-4 w-4 text-theme-muted" />
+                Raw Bug Log / Customer Ticket
+              </label>
+
+              {text.trim() && (
+                <span className="text-[10px] text-theme-muted">
+                  {text.length.toLocaleString()} characters
+                </span>
+              )}
+            </div>
 
             <textarea
               value={text}
               onChange={(e) => setText(e.target.value)}
-              placeholder="Paste raw error message, stacktrace, or bug report description here..."
-              rows={12}
-              className="w-full bg-zinc-950 border border-zinc-800/80 rounded-lg p-3 text-xs text-zinc-200 placeholder-zinc-600 focus:outline-none focus:border-amber-500/50 focus:ring-1 focus:ring-amber-500/20 font-mono resize-none transition-all"
+              placeholder={
+                "Paste a raw error message, stack trace, customer report, or bug description here..."
+              }
+              rows={14}
+              disabled={loading}
+              className="w-full resize-none rounded-lg border border-theme-border/80 bg-theme-primary p-3 font-mono text-xs leading-relaxed text-theme-text placeholder-theme-muted outline-none transition-all focus:border-amber-500/50 focus:ring-1 focus:ring-amber-500/20 disabled:cursor-not-allowed disabled:opacity-60"
             />
+
+            <div className="flex items-start gap-2 rounded-lg border border-theme-border/60 bg-theme-primary/40 px-3 py-2.5">
+              <Brain className="mt-0.5 h-3.5 w-3.5 shrink-0 text-amber-400" />
+
+              <p className="text-[10px] leading-relaxed text-theme-muted">
+                Sentinel will extract the issue title, description, service,
+                priority, severity, and reproduction steps. You can review
+                and edit the result before creating the issue.
+              </p>
+            </div>
           </div>
 
-          <div className="flex items-center justify-between pt-2 border-t border-zinc-800/60">
+          {/* Input Actions */}
+          <div className="flex items-center justify-between border-t border-theme-border/60 pt-3">
             <button
               type="button"
               onClick={handleReset}
-              className="px-3 py-1.5 text-xs text-zinc-400 hover:text-zinc-200 flex items-center gap-1.5 transition-colors cursor-pointer"
+              disabled={loading && !text}
+              className="flex cursor-pointer items-center gap-1.5 rounded-md px-3 py-1.5 text-xs text-theme-muted transition-colors hover:bg-theme-tertiary hover:text-theme-text disabled:cursor-not-allowed disabled:opacity-50"
             >
-              <RotateCcw className="w-3.5 h-3.5" />
+              <RotateCcw className="h-3.5 w-3.5" />
               Reset
             </button>
 
@@ -123,170 +309,532 @@ export default function Triage() {
               type="button"
               onClick={handleRunTriage}
               disabled={loading || !text.trim()}
-              className="flex items-center gap-2 px-4 py-2 rounded-lg bg-zinc-100 text-zinc-950 hover:bg-white disabled:opacity-50 disabled:cursor-not-allowed text-xs font-semibold transition-all cursor-pointer shadow-sm"
+              className="flex cursor-pointer items-center gap-2 rounded-lg bg-theme-text px-4 py-2 text-xs font-semibold text-theme-primary shadow-sm transition-all hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
             >
               <Sparkles
-                className={`w-4 h-4 text-amber-500 ${loading ? "animate-spin" : "fill-amber-500"
-                  }`}
+                className={`h-4 w-4 text-amber-500 ${
+                  loading
+                    ? "animate-spin"
+                    : "fill-amber-500"
+                }`}
               />
-              <span>{loading ? "Parsing Log..." : "Run AI Triage"}</span>
+
+              <span>
+                {loading ? "Parsing Log..." : "Run AI Triage"}
+              </span>
             </button>
           </div>
         </div>
 
-        {/* Right Panel: Extracted Issue Preview */}
-        <div className="bg-zinc-900/60 border border-zinc-800/80 rounded-xl p-5 flex flex-col justify-between">
+        {/* ========================================================= */}
+        {/* RIGHT PANEL — PREVIEW                                     */}
+        {/* ========================================================= */}
+
+        <div className="flex flex-col justify-between rounded-xl border border-theme-border/80 bg-theme-secondary/60 p-5">
           <div>
-            <div className="flex items-center gap-2 pb-3 border-b border-zinc-800/80">
-              <Layers className="w-4 h-4 text-indigo-400" />
-              <span className="text-xs font-semibold text-zinc-300">
-                Structured Issue Preview
-              </span>
+            {/* Preview Header */}
+            <div className="flex items-center justify-between gap-3 border-b border-theme-border/80 pb-3">
+              <div className="flex items-center gap-2">
+                <Layers className="h-4 w-4 text-sky-400" />
+
+                <span className="text-xs font-semibold text-theme-text">
+                  Structured Issue Preview
+                </span>
+              </div>
+
+              {issue && !loading && !noIssueFound && (
+                <div className="flex items-center gap-2">
+                  <span className="hidden rounded-full border border-amber-500/20 bg-amber-500/10 px-2 py-0.5 text-[9px] font-mono text-amber-400 sm:inline-flex">
+                    AI GENERATED
+                  </span>
+
+                  {!isEditing && (
+                    <button
+                      type="button"
+                      onClick={handleEdit}
+                      className="flex items-center gap-1.5 rounded-md border border-theme-border bg-theme-primary px-2.5 py-1.5 text-[11px] font-medium text-theme-muted transition-colors hover:bg-theme-tertiary hover:text-theme-text"
+                    >
+                      <Pencil className="h-3 w-3" />
+                      Edit
+                    </button>
+                  )}
+                </div>
+              )}
             </div>
 
-            {/* Empty State */}
+            {/* ===================================================== */}
+            {/* EMPTY STATE                                            */}
+            {/* ===================================================== */}
+
             {!issue && !loading && !error && (
-              <div className="h-64 flex flex-col items-center justify-center text-center p-6 space-y-2">
-                <div className="w-10 h-10 rounded-full bg-zinc-800/50 flex items-center justify-center text-zinc-500">
-                  <ShieldAlert className="w-5 h-5" />
+              <div className="flex h-72 flex-col items-center justify-center space-y-2 p-6 text-center">
+                <div className="flex h-11 w-11 items-center justify-center rounded-full border border-theme-border bg-theme-tertiary/50 text-theme-muted">
+                  <ShieldAlert className="h-5 w-5" />
                 </div>
-                <p className="text-xs font-medium text-zinc-400">
+
+                <p className="text-xs font-medium text-theme-text">
                   No Issue Extracted Yet
                 </p>
-                <p className="text-[11px] text-zinc-500 max-w-xs">
-                  Paste a bug report and click "Run AI Triage".
+
+                <p className="max-w-xs text-[11px] leading-relaxed text-theme-muted">
+                  Paste a bug report on the left and click "Run AI Triage" to
+                  analyze it.
                 </p>
               </div>
             )}
 
-            {/* Error State */}
-            {error && (
-              <div className="h-64 flex flex-col items-center justify-center text-center p-6 space-y-2">
-                <div className="w-10 h-10 rounded-full bg-rose-500/10 flex items-center justify-center text-rose-400">
-                  <XCircle className="w-5 h-5" />
+            {/* ===================================================== */}
+            {/* ERROR STATE                                            */}
+            {/* ===================================================== */}
+
+            {error && !issue && !loading && (
+              <div className="flex h-72 flex-col items-center justify-center space-y-2 p-6 text-center">
+                <div className="flex h-11 w-11 items-center justify-center rounded-full bg-rose-500/10 text-rose-400">
+                  <XCircle className="h-5 w-5" />
                 </div>
-                <p className="text-xs font-medium text-rose-400">Triage Failed</p>
-                <p className="text-[11px] text-zinc-400 max-w-xs">{error}</p>
+
+                <p className="text-xs font-medium text-rose-400">
+                  Triage Failed
+                </p>
+
+                <p className="max-w-xs text-[11px] leading-relaxed text-theme-muted">
+                  Check your input and try running the triage again.
+                </p>
               </div>
             )}
 
-            {/* Loading State */}
+            {/* ===================================================== */}
+            {/* LOADING STATE                                          */}
+            {/* ===================================================== */}
+
             {loading && (
-              <div className="h-64 flex flex-col items-center justify-center space-y-3">
-                <Sparkles className="w-8 h-8 text-amber-400 animate-bounce" />
-                <p className="text-xs text-zinc-400 font-mono animate-pulse">
-                  Extracting issue details...
-                </p>
+              <div className="flex h-72 flex-col items-center justify-center space-y-3">
+                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-amber-500/10">
+                  <Sparkles className="h-6 w-6 animate-pulse text-amber-400" />
+                </div>
+
+                <div className="text-center">
+                  <p className="text-xs font-medium text-theme-text">
+                    Analyzing issue
+                  </p>
+
+                  <p className="mt-1 font-mono text-[10px] text-theme-muted">
+                    Extracting structured issue details...
+                  </p>
+                </div>
               </div>
             )}
 
-            {/* No Issue Detected State */}
+            {/* ===================================================== */}
+            {/* NO ISSUE STATE                                         */}
+            {/* ===================================================== */}
+
             {issue && !loading && noIssueFound && (
-              <div className="h-64 flex flex-col items-center justify-center text-center p-6 space-y-2">
-                <div className="w-10 h-10 rounded-full bg-zinc-800/50 flex items-center justify-center text-zinc-500">
-                  <ShieldAlert className="w-5 h-5" />
+              <div className="flex h-72 flex-col items-center justify-center space-y-2 p-6 text-center">
+                <div className="flex h-11 w-11 items-center justify-center rounded-full bg-theme-tertiary/50 text-theme-muted">
+                  <ShieldAlert className="h-5 w-5" />
                 </div>
-                <p className="text-xs font-medium text-zinc-400">
+
+                <p className="text-xs font-medium text-theme-text">
                   No Issue Detected
                 </p>
-                <p className="text-[11px] text-zinc-500 max-w-xs">
+
+                <p className="max-w-xs text-[11px] leading-relaxed text-theme-muted">
                   This text doesn't appear to describe a bug or problem.
+                  Try providing a more specific issue report.
                 </p>
               </div>
             )}
 
-            {/* Extracted Result */}
-            {issue && !loading && !noIssueFound && (
+            {/* ===================================================== */}
+            {/* EDIT MODE                                              */}
+            {/* ===================================================== */}
+
+            {issue && !loading && !noIssueFound && isEditing && editedIssue && (
               <div className="mt-4 space-y-4">
+                {/* Title */}
+                <div className="space-y-1.5">
+                  <label className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wider text-theme-muted">
+                    <FileText className="h-3 w-3" />
+                    Issue Title
+                  </label>
+
+                  <input
+                    type="text"
+                    value={editedIssue.title}
+                    onChange={(e) =>
+                      updateEditedField("title", e.target.value)
+                    }
+                    className="w-full rounded-lg border border-theme-border bg-theme-primary px-3 py-2 text-sm font-semibold text-theme-text outline-none transition-colors placeholder-theme-muted focus:border-sky-500/50 focus:ring-1 focus:ring-sky-500/10"
+                    placeholder="Issue title"
+                  />
+                </div>
+
+                {/* Description */}
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-semibold uppercase tracking-wider text-theme-muted">
+                    Description
+                  </label>
+
+                  <textarea
+                    rows={3}
+                    value={editedIssue.description}
+                    onChange={(e) =>
+                      updateEditedField(
+                        "description",
+                        e.target.value
+                      )
+                    }
+                    className="w-full resize-y rounded-lg border border-theme-border bg-theme-primary px-3 py-2 text-xs leading-relaxed text-theme-text outline-none transition-colors placeholder-theme-muted focus:border-sky-500/50 focus:ring-1 focus:ring-sky-500/10"
+                    placeholder="Describe the issue..."
+                  />
+                </div>
+
+                {/* Service / Priority / Severity */}
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+                  {/* Service */}
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-semibold uppercase tracking-wider text-theme-muted">
+                      Service
+                    </label>
+
+                    <input
+                      type="text"
+                      value={editedIssue.service}
+                      onChange={(e) =>
+                        updateEditedField(
+                          "service",
+                          e.target.value
+                        )
+                      }
+                      className="w-full rounded-lg border border-theme-border bg-theme-primary px-3 py-2 text-xs text-theme-text outline-none transition-colors placeholder-theme-muted focus:border-sky-500/50"
+                      placeholder="Service"
+                    />
+                  </div>
+
+                  {/* Priority */}
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-semibold uppercase tracking-wider text-theme-muted">
+                      Priority
+                    </label>
+
+                    <div className="relative">
+                      <select
+                        value={editedIssue.priority}
+                        onChange={(e) =>
+                          updateEditedField(
+                            "priority",
+                            e.target.value
+                          )
+                        }
+                        className="w-full appearance-none rounded-lg border border-theme-border bg-theme-primary px-3 py-2 pr-8 text-xs text-theme-text outline-none transition-colors focus:border-sky-500/50"
+                      >
+                        <option value="High">High</option>
+                        <option value="Medium">Medium</option>
+                        <option value="Low">Low</option>
+                      </select>
+
+                      <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-theme-muted" />
+                    </div>
+                  </div>
+
+                  {/* Severity */}
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-semibold uppercase tracking-wider text-theme-muted">
+                      Severity
+                    </label>
+
+                    <div className="relative">
+                      <select
+                        value={editedIssue.severity}
+                        onChange={(e) =>
+                          updateEditedField(
+                            "severity",
+                            e.target.value
+                          )
+                        }
+                        className="w-full appearance-none rounded-lg border border-theme-border bg-theme-primary px-3 py-2 pr-8 text-xs text-theme-text outline-none transition-colors focus:border-sky-500/50"
+                      >
+                        <option value="P1">P1 - Critical</option>
+                        <option value="P2">P2 - High</option>
+                        <option value="P3">P3 - Medium</option>
+                        <option value="P4">P4 - Low</option>
+                      </select>
+
+                      <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-theme-muted" />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Reproduction Steps */}
                 <div className="space-y-2">
-                  <div className="flex items-center gap-2 flex-wrap">
+                  <div className="flex items-center justify-between">
+                    <label className="text-[10px] font-semibold uppercase tracking-wider text-theme-muted">
+                      Reproduction Steps
+                    </label>
+
+                    <button
+                      type="button"
+                      onClick={addStep}
+                      className="text-[10px] font-medium text-sky-400 transition-colors hover:text-sky-300"
+                    >
+                      + Add step
+                    </button>
+                  </div>
+
+                  <div className="space-y-2">
+                    {editedIssue.reproduction_steps.length === 0 ? (
+                      <div className="rounded-lg border border-dashed border-theme-border px-3 py-4 text-center text-[11px] text-theme-muted">
+                        No reproduction steps.
+                      </div>
+                    ) : (
+                      editedIssue.reproduction_steps.map(
+                        (step, index) => (
+                          <div
+                            key={index}
+                            className="flex items-center gap-2"
+                          >
+                            <span className="w-5 shrink-0 text-center font-mono text-[10px] text-theme-muted">
+                              {index + 1}.
+                            </span>
+
+                            <input
+                              type="text"
+                              value={step}
+                              onChange={(e) =>
+                                updateStep(
+                                  index,
+                                  e.target.value
+                                )
+                              }
+                              className="min-w-0 flex-1 rounded-lg border border-theme-border bg-theme-primary px-3 py-2 text-xs text-theme-text outline-none transition-colors focus:border-sky-500/50"
+                              placeholder={`Step ${index + 1}`}
+                            />
+
+                            <button
+                              type="button"
+                              onClick={() => removeStep(index)}
+                              className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-theme-muted transition-colors hover:bg-rose-500/10 hover:text-rose-400"
+                              aria-label={`Remove step ${index + 1}`}
+                              title="Remove step"
+                            >
+                              <XCircle className="h-3.5 w-3.5" />
+                            </button>
+                          </div>
+                        )
+                      )
+                    )}
+                  </div>
+                </div>
+
+                {/* Edit Actions */}
+                <div className="flex items-center justify-end gap-2 border-t border-theme-border/60 pt-3">
+                  <button
+                    type="button"
+                    onClick={handleCancelEdit}
+                    className="rounded-lg px-3 py-1.5 text-xs font-medium text-theme-muted transition-colors hover:bg-theme-tertiary hover:text-theme-text"
+                  >
+                    Cancel
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={handleSaveEdit}
+                    className="flex items-center gap-1.5 rounded-lg bg-theme-text px-3.5 py-1.5 text-xs font-semibold text-theme-primary transition-opacity hover:opacity-90"
+                  >
+                    <Save className="h-3.5 w-3.5" />
+                    Save Changes
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* ===================================================== */}
+            {/* READ-ONLY RESULT                                       */}
+            {/* ===================================================== */}
+
+            {issue &&
+              !loading &&
+              !noIssueFound &&
+              !isEditing && (
+                <div className="mt-4 space-y-4">
+                  {/* AI Metadata */}
+                  <div className="flex flex-wrap items-center gap-2">
                     {issue.severity && (
                       <span
-                        className={`px-2 py-0.5 rounded text-[11px] font-bold border flex items-center gap-1 uppercase ${severityStyles[issue.severity] ||
-                          "text-zinc-400 border-zinc-500/20 bg-zinc-500/10"
-                          }`}
+                        className={`flex items-center gap-1 rounded border px-2 py-0.5 text-[10px] font-bold uppercase ${
+                          severityStyles[issue.severity] ||
+                          "border-theme-border bg-theme-tertiary text-theme-muted"
+                        }`}
                       >
-                        <AlertTriangle className="w-3 h-3" />
-                        SEVERITY {issue.severity}
+                        <AlertTriangle className="h-3 w-3" />
+                        Severity {issue.severity}
                       </span>
                     )}
 
                     {issue.service && (
-                      <span className="px-2 py-0.5 rounded text-[11px] font-mono bg-zinc-800 text-zinc-300 border border-zinc-700/60">
+                      <span className="rounded border border-theme-border bg-theme-tertiary/60 px-2 py-0.5 font-mono text-[10px] text-theme-muted">
                         {issue.service}
                       </span>
                     )}
 
                     {issue.priority && (
-                      <span className="px-2 py-0.5 rounded text-[11px] font-mono bg-zinc-800 text-zinc-300 border border-zinc-700/60">
+                      <span className="rounded border border-theme-border bg-theme-tertiary/60 px-2 py-0.5 font-mono text-[10px] text-theme-muted">
                         {issue.priority}
                       </span>
                     )}
                   </div>
 
-                  <h3 className="text-sm font-bold text-zinc-100 leading-snug">
-                    {issue.title || "Untitled Issue"}
-                  </h3>
-                </div>
+                  {/* Title */}
+                  <div className="space-y-1">
+                    <h3 className="wrap-anywhere text-sm font-bold leading-snug text-theme-text">
+                      {issue.title || "Untitled Issue"}
+                    </h3>
 
-                {steps.length > 0 && (
-                  <div className="space-y-1.5">
-                    <span className="text-[11px] font-semibold text-zinc-400 uppercase tracking-wider">
-                      Reproduction Steps
-                    </span>
-
-                    <ul className="space-y-1">
-                      {steps.map((step, index) => (
-                        <li
-                          key={index}
-                          className="text-xs text-zinc-300 flex items-start gap-2"
-                        >
-                          <span className="text-zinc-500 font-mono text-[10px] mt-0.5 select-none">
-                            {index + 1}.
-                          </span>
-                          <span>{step}</span>
-                        </li>
-                      ))}
-                    </ul>
+                    {confidence !== null && (
+                      <span className="text-[10px] text-theme-muted">
+                        AI confidence:{" "}
+                        <span className="font-semibold text-emerald-500">
+                          {confidence}%
+                        </span>
+                      </span>
+                    )}
                   </div>
-                )}
-              </div>
-            )}
+
+                  {/* Description */}
+                  {issue.description && (
+                    <div className="space-y-1.5">
+                      <span className="text-[10px] font-semibold uppercase tracking-wider text-theme-muted">
+                        Description
+                      </span>
+
+                      <p className="rounded-lg border border-theme-border/60 bg-theme-primary/40 p-3 text-xs leading-relaxed text-theme-muted">
+                        {issue.description}
+                      </p>
+                    </div>
+                  )}
+
+                  {/* AI Reasoning */}
+                  {(issue.ai_priority_reason ||
+                    issue.ai_severity_reason) && (
+                    <details className="group rounded-lg border border-theme-border/60 bg-theme-primary/30">
+                      <summary className="flex cursor-pointer list-none items-center justify-between px-3 py-2.5 text-[10px] font-semibold text-theme-muted transition-colors hover:text-theme-text">
+                        <span className="flex items-center gap-1.5">
+                          <Brain className="h-3.5 w-3.5 text-amber-400" />
+                          AI Analysis
+                        </span>
+
+                        <ChevronDown className="h-3.5 w-3.5 transition-transform group-open:rotate-180" />
+                      </summary>
+
+                      <div className="space-y-2 border-t border-theme-border/60 px-3 py-3">
+                        {issue.ai_priority_reason && (
+                          <div>
+                            <p className="text-[10px] font-semibold text-theme-text">
+                              Priority
+                            </p>
+
+                            <p className="mt-0.5 text-[10px] leading-relaxed text-theme-muted">
+                              {issue.ai_priority_reason}
+                            </p>
+                          </div>
+                        )}
+
+                        {issue.ai_severity_reason && (
+                          <div>
+                            <p className="text-[10px] font-semibold text-theme-text">
+                              Severity
+                            </p>
+
+                            <p className="mt-0.5 text-[10px] leading-relaxed text-theme-muted">
+                              {issue.ai_severity_reason}
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                    </details>
+                  )}
+
+                  {/* Reproduction Steps */}
+                  {steps.length > 0 && (
+                    <div className="space-y-1.5">
+                      <span className="text-[10px] font-semibold uppercase tracking-wider text-theme-muted">
+                        Reproduction Steps
+                      </span>
+
+                      <ul className="space-y-1.5">
+                        {steps.map((step, index) => (
+                          <li
+                            key={index}
+                            className="flex items-start gap-2 text-xs leading-relaxed text-theme-muted"
+                          >
+                            <span className="mt-0.5 w-4 shrink-0 text-right font-mono text-[10px] text-theme-muted">
+                              {index + 1}.
+                            </span>
+
+                            <span className="wrap-anywhere">
+                              {step}
+                            </span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </div>
+              )}
           </div>
 
-          {issue && !loading && !noIssueFound && (
-            <div className="pt-4 mt-6 border-t border-zinc-800/80 flex items-center justify-between">
-              <button
-                type="button"
-                onClick={handleCreateIssue}
-                disabled={saved}
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-semibold transition-all cursor-pointer ${saved
-                  ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
-                  : "bg-indigo-600 hover:bg-indigo-500 text-white shadow-sm"
-                  }`}
-              >
+          {/* ======================================================= */}
+          {/* BOTTOM ACTIONS                                          */}
+          {/* ======================================================= */}
+
+          {issue && !loading && !noIssueFound && !isEditing && (
+            <div className="mt-6 flex flex-col gap-3 border-t border-theme-border/80 pt-4 sm:flex-row sm:items-center sm:justify-between">
+              <div>
                 {saved ? (
-                  <>
-                    <Check className="w-4 h-4" />
-                    <span>Added to Issues</span>
-                  </>
+                  <div className="flex items-center gap-1.5 text-[11px] text-emerald-500">
+                    <Check className="h-3.5 w-3.5" />
+                    Issue created successfully.
+                  </div>
+                ) : (
+                  <p className="text-[10px] text-theme-muted">
+                    Review the AI output before creating the issue.
+                  </p>
+                )}
+              </div>
+
+              <div className="flex items-center gap-2">
+                {saved ? (
+                  <button
+                    type="button"
+                    onClick={() => navigate("/issues")}
+                    className="flex items-center gap-1.5 rounded-lg border border-theme-border bg-theme-primary px-3.5 py-2 text-xs font-semibold text-theme-text transition-colors hover:bg-theme-tertiary"
+                  >
+                    View Issues
+                    <ArrowRight className="h-3.5 w-3.5" />
+                  </button>
                 ) : (
                   <>
-                    <span>Confirm & Create Issue</span>
-                    <ArrowRight className="w-3.5 h-3.5" />
+                    <button
+                      type="button"
+                      onClick={handleEdit}
+                      className="flex items-center gap-1.5 rounded-lg border border-theme-border bg-theme-primary px-3.5 py-2 text-xs font-medium text-theme-muted transition-colors hover:bg-theme-tertiary hover:text-theme-text"
+                    >
+                      <Pencil className="h-3.5 w-3.5" />
+                      Edit Issue
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={handleCreateIssue}
+                      className="flex items-center gap-1.5 rounded-lg bg-theme-text px-3.5 py-2 text-xs font-semibold text-theme-primary shadow-sm transition-opacity hover:opacity-90"
+                    >
+                      <Check className="h-3.5 w-3.5" />
+                      Create Issue
+                    </button>
                   </>
                 )}
-              </button>
-
-              {saved && (
-                <span
-                  onClick={() => navigate("/issues")}
-                  className="flex items-center gap-1 text-[11px] text-zinc-500 cursor-pointer hover:text-zinc-300"
-                >
-                  Issue created successfully →
-                  <span className="font-medium">View Issues</span>
-                </span>
-              )}
+              </div>
             </div>
           )}
         </div>

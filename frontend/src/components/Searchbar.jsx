@@ -28,11 +28,14 @@ export default function SearchBar() {
         setIsOpen(false);
       }
     }
+
     document.addEventListener('mousedown', handleClickOutside);
+
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
   const q = query.toLowerCase();
+
   const results = query.trim()
     ? issues.filter((item) =>
         (item.title || '').toLowerCase().includes(q) ||
@@ -52,7 +55,8 @@ export default function SearchBar() {
 
   return (
     <div className="relative w-80" ref={containerRef}>
-      <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500" />
+      <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-theme-muted" />
+
       <input
         type="text"
         placeholder="Search specs, tickets, or AC criteria..."
@@ -62,18 +66,21 @@ export default function SearchBar() {
           setIsOpen(true);
         }}
         onFocus={() => setIsOpen(true)}
-        className="w-full bg-zinc-900/60 border border-zinc-800/80 rounded-lg pl-9 pr-3 py-1.5 text-xs text-zinc-200 placeholder-zinc-500 focus:outline-none focus:border-zinc-700"
+        className="w-full bg-theme-secondary border border-theme-border rounded-lg pl-9 pr-3 py-1.5 text-xs text-theme-text placeholder-theme-muted focus:outline-none focus:border-theme-text/40"
       />
 
       {isOpen && results.length > 0 && (
-        <div className="absolute mt-1 w-full rounded-lg border border-zinc-800 bg-zinc-950 shadow-xl z-50 max-h-64 overflow-y-auto">
+        <div className="absolute mt-1 w-full rounded-lg border border-theme-border bg-theme-primary shadow-xl z-50 max-h-64 overflow-y-auto">
           {results.map((issue) => (
             <button
               key={issue.id}
               onClick={() => handleSelect(issue)}
-              className="w-full text-left px-3 py-2 text-xs text-zinc-200 hover:bg-zinc-900 transition-colors border-b border-zinc-900 last:border-0"
+              className="w-full text-left px-3 py-2 text-xs text-theme-text hover:bg-theme-secondary transition-colors border-b border-theme-border last:border-0"
             >
-              <span className="font-mono text-zinc-500 mr-2">ISS-{issue.id}</span>
+              <span className="font-mono text-theme-muted mr-2">
+                ISS-{issue.id}
+              </span>
+
               {issue.title}
             </button>
           ))}
@@ -81,7 +88,7 @@ export default function SearchBar() {
       )}
 
       {isOpen && query.trim() && results.length === 0 && (
-        <div className="absolute mt-1 w-full rounded-lg border border-zinc-800 bg-zinc-950 shadow-xl z-50 px-3 py-2 text-xs text-zinc-500">
+        <div className="absolute mt-1 w-full rounded-lg border border-theme-border bg-theme-primary shadow-xl z-50 px-3 py-2 text-xs text-theme-muted">
           No matching issues.
         </div>
       )}

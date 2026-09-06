@@ -23,14 +23,14 @@ export default function UpcomingIssueCard({ issue }) {
   }
 
   return (
-    <div className="rounded-lg border border-zinc-800/60 bg-zinc-950/30 p-4 hover:border-zinc-700 transition-all">
+    <div className="rounded-lg border border-theme-border/60 bg-theme-primary/30 p-4 hover:border-theme-text/30 transition-all">
       <div className="flex items-center justify-between">
         <div>
-          <h4 className="text-sm font-semibold text-zinc-200">
+          <h4 className="text-sm font-semibold text-theme-text">
             {issue.title}
           </h4>
 
-          <p className="mt-1 text-xs text-zinc-500">
+          <p className="mt-1 text-xs text-theme-muted">
             {issue.service}
           </p>
         </div>
@@ -45,13 +45,13 @@ export default function UpcomingIssueCard({ issue }) {
       </div>
 
       <div className="mt-4 flex items-center justify-between">
-        <span className="rounded-md bg-zinc-800/60 px-2 py-1 text-[10px] font-medium text-zinc-400">
+        <span className="rounded-md bg-theme-tertiary/60 px-2 py-1 text-[10px] font-medium text-theme-muted">
           {statusLabel[issue.status] || issue.status}
         </span>
 
         <button
           onClick={handleOpen}
-          className="flex items-center gap-1 text-xs text-zinc-500 hover:text-zinc-300 transition-colors"
+          className="flex items-center gap-1 text-xs text-theme-muted hover:text-theme-text transition-colors"
         >
           Open
           <ChevronRight size={12} />

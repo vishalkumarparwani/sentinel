@@ -10,7 +10,7 @@ export default function MainLayout() {
     const [isAIOpen, setIsAIOpen] = useState(false);
 
     return (
-        <div className="flex h-screen bg-zinc-950 text-zinc-100 overflow-hidden">
+        <div className="flex h-screen bg-theme-primary text-theme-text overflow-hidden">
             <Sidebar
                 isSidebarOpen={isSidebarOpen}
                 setIsSidebarOpen={setIsSidebarOpen}

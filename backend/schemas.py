@@ -65,33 +65,24 @@ class IssueUpdate(BaseModel):
 
 class IssueOut(BaseModel):
     id: int
+
     title: str
+    description: str | None = None
     service: str
+
     priority: str
-    status: str
-    due_date: date | None
     severity: str | None = None
+    status: str
+
+    due_date: date | None = None
     reproduction_steps: str | None = None
     created_at: datetime
-    user_id: int | None
+    user_id: int | None = None
+
+    ai_summary: str | None = None
+    ai_priority_reason: str | None = None
+    ai_severity_reason: str | None = None
+    ai_confidence: float | None = None
 
     class Config:
         from_attributes = True
-
-
-# class DashboardStats(BaseModel):
-#     total_tasks: int
-#     completed_tasks: int
-#     active_tasks: int
-#     active_projects: int 
-
-# class UpcomingTask(BaseModel):
-#     id: int
-#     title: str
-#     project: str | None = None
-#     priority: str
-#     status: str
-
-# class DashboardResponse(BaseModel):
-#     stats: DashboardStats
-#     upcoming_tasks: list[UpcomingTask]
