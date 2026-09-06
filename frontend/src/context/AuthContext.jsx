@@ -15,9 +15,13 @@ export const AuthProvider = ({ children }) => {
 
   const [loading, setLoading] = useState(false);
 
-  // Apply the user's saved theme whenever user changes
+  // Apply the user's saved theme when authenticated,
+  // otherwise use the theme selected on the login/register page.
   useEffect(() => {
-    const theme = user?.theme || 'dark';
+    const theme =
+      user?.theme ||
+      localStorage.getItem('theme') ||
+      'dark';
 
     document.documentElement.classList.toggle(
       'light',
@@ -31,6 +35,16 @@ export const AuthProvider = ({ children }) => {
 
     localStorage.setItem('authToken', authToken);
     localStorage.setItem('user', JSON.stringify(userData));
+
+    // The authenticated user's backend theme takes priority.
+    const theme = userData?.theme || 'dark';
+
+    document.documentElement.classList.toggle(
+      'light',
+      theme === 'light'
+    );
+
+    localStorage.setItem('theme', theme);
   };
 
   const logout = () => {
@@ -40,8 +54,14 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem('authToken');
     localStorage.removeItem('user');
 
-    // Reset to dark after logout
-    document.documentElement.classList.remove('light');
+    // Keep the user's last selected theme for the
+    // unauthenticated Login/Register pages.
+    const theme = localStorage.getItem('theme') || 'dark';
+
+    document.documentElement.classList.toggle(
+      'light',
+      theme === 'light'
+    );
   };
 
   const setTheme = async (theme) => {
@@ -49,6 +69,7 @@ export const AuthProvider = ({ children }) => {
 
     setUser(updatedUser);
     localStorage.setItem('user', JSON.stringify(updatedUser));
+    localStorage.setItem('theme', theme);
   };
 
   return (
