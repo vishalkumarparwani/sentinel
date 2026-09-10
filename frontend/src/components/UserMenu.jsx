@@ -1,21 +1,31 @@
 import React from 'react';
-import { Bell, User } from 'lucide-react';
+import { Bell, Moon, User } from 'lucide-react';
 
 export default function UserMenu() {
   return (
     <div className="flex items-center gap-3">
-      <button className="p-2 text-theme-muted hover:text-theme-text rounded-lg hover:bg-theme-secondary transition-colors">
-        <Bell className="w-4 h-4" />
-      </button>
+      <div className="flex items-center gap-1">
+        <button
+          type="button"
+          className="flex h-8 w-8 items-center justify-center rounded-lg text-theme-muted transition-colors hover:bg-theme-secondary hover:text-theme-text"
+          aria-label="Notifications"
+        >
+          <Bell className="h-4 w-4" />
+        </button>
 
-      <div className="flex items-center gap-2 pl-2 border-l border-theme-border">
-        <div className="w-7 h-7 rounded-full bg-theme-tertiary border border-theme-border flex items-center justify-center text-theme-muted">
-          <User className="w-4 h-4" />
+        <button
+          type="button"
+          className="flex h-8 w-8 items-center justify-center rounded-lg text-theme-muted transition-colors hover:bg-theme-secondary hover:text-theme-text"
+          aria-label="Toggle theme"
+        >
+          <Moon className="h-4 w-4" />
+        </button>
+      </div>
+
+      <div className="flex items-center gap-2 border-l border-theme-border pl-2">
+        <div className="flex h-7 w-7 items-center justify-center rounded-full border border-theme-border bg-theme-tertiary text-theme-muted">
+          <User className="h-4 w-4" />
         </div>
-
-        <span className="text-xs font-medium text-theme-muted">
-          Vishal (Tech Lead)
-        </span>
       </div>
     </div>
   );

@@ -9,26 +9,31 @@ export default function Navbar({
   onToggleAI,
 }) {
   return (
-    <header className="h-14 border-b border-theme-border bg-theme-primary/80 backdrop-blur px-4 md:px-8 flex items-center justify-between sticky top-0 z-30">
-      <div className="flex items-center gap-3">
+    <header className="sticky top-0 z-30 flex h-14 items-center justify-between border-b border-theme-border bg-theme-primary/80 px-4 backdrop-blur md:px-8">
+      <div className="flex min-w-0 items-center gap-3">
         <button
+          type="button"
           onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-          className="md:hidden p-2 rounded-lg hover:bg-theme-secondary transition-colors"
+          className="rounded-lg p-2 transition-colors hover:bg-theme-secondary md:hidden"
           aria-label="Toggle Sidebar"
         >
-          <Menu className="w-5 h-5 text-theme-muted" />
+          <Menu className="h-5 w-5 text-theme-muted" />
         </button>
 
         <SearchBar />
       </div>
 
-      <div className="flex items-center gap-4">
+      <div className="ml-3 flex shrink-0 items-center gap-4">
         <button
+          type="button"
           onClick={onToggleAI}
-          className="flex items-center gap-2 bg-theme-secondary hover:bg-theme-tertiary border border-theme-border text-theme-text text-xs px-3 py-1.5 rounded-lg transition-colors"
+          aria-label="Open Sentinel Copilot"
+          title="Sentinel Copilot"
+          className="flex h-8 items-center gap-2 rounded-lg border border-theme-border bg-theme-secondary px-2.5 text-xs text-theme-text transition-colors hover:bg-theme-tertiary xl:px-3"
         >
-          <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-          <span className="hidden sm:inline">Sentinel Copilot</span>
+          <Sparkles className="h-3.5 w-3.5 shrink-0 text-amber-400" />
+
+          <span className="hidden xl:inline">Sentinel Copilot</span>
         </button>
 
         <UserMenu />

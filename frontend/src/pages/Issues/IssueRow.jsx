@@ -18,7 +18,7 @@ const statusConfig = {
   in_progress: {
     label: "In Progress",
     color:
-      "text-amber-400 border-amber-500/20 bg-amber-500/10 hover:bg-amber-500/20",
+      "text-amber-600 border-amber-500/20 bg-amber-200/10 hover:bg-amber-500/20",
   },
   done: {
     label: "Done",
@@ -81,20 +81,17 @@ export default function IssueRow({
 
   return (
     <div
-      className={`group relative rounded-xl border p-4 transition-all duration-300 ${
-        isHighlighted
-          ? "border-amber-500/60 bg-amber-500/10 ring-1 ring-amber-500/40"
-          : "border-theme-border/80 bg-theme-secondary/50 hover:border-theme-border hover:bg-theme-secondary/90"
-      }`}
+      className={`group relative rounded-xl border p-4 transition-all duration-300 ${isHighlighted
+        ? "border-amber-500/60 bg-amber-500/10 ring-1 ring-amber-500/40"
+        : "border-theme-border/80 bg-theme-secondary/50 hover:border-theme-border hover:bg-theme-secondary/90"
+        }`}
     >
-      {/* Header */}
       <div className="flex items-start justify-between gap-3">
         <h3 className="wrap-anywhere text-[14px] font-semibold leading-snug tracking-tight text-theme-text">
           {item.title}
         </h3>
 
         <div className="flex items-center gap-2 shrink-0">
-          {/* Actions */}
           <div className="flex items-center gap-1 rounded-lg border border-theme-border bg-theme-primary/80 p-1">
             <button
               type="button"
@@ -121,19 +118,47 @@ export default function IssueRow({
             </button>
           </div>
 
-          {/* Status */}
-          <button
-            type="button"
-            onClick={onToggleStatus}
-            className={`flex shrink-0 items-center gap-1.5 rounded-md border px-2 py-1.5 font-mono text-[10px] font-medium transition-all ${status.color}`}
-          >
-            <StatusIcon size={11} />
-            {status.label}
-          </button>
+          <div className="relative shrink-0">
+            <StatusIcon
+              size={12}
+              className="pointer-events-none absolute left-2 top-1/2 -translate-y-1/2"
+            />
+
+            <select
+              value={item.status}
+              onChange={(e) => onToggleStatus(e.target.value)}
+              className={`appearance-none flex shrink-0 items-center rounded-md border py-1.5 pl-7 pr-7 font-mono text-[10px] font-medium transition-all ${status.color}`}
+            >
+              <option
+                value="planning"
+                className="bg-white text-yellow-600 dark:bg-gray-900 dark:text-yellow-400"
+              >
+                Planning
+              </option>
+
+              <option
+                value="in_progress"
+                className="bg-white text-blue-600 dark:bg-gray-900 dark:text-blue-400"
+              >
+                In Progress
+              </option>
+
+              <option
+                value="done"
+                className="bg-white text-green-600 dark:bg-gray-900 dark:text-green-400"
+              >
+                Done
+              </option>
+            </select>
+
+            <ChevronRight
+              size={12}
+              className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 rotate-90 text-theme-muted"
+            />
+          </div>
         </div>
       </div>
 
-      {/* Metadata */}
       <div className="mt-2 flex items-center gap-2 flex-wrap">
         <span className="cursor-pointer font-mono text-[11px] font-semibold text-theme-muted transition-colors hover:text-theme-text">
           ISS-{item.id}
@@ -161,7 +186,6 @@ export default function IssueRow({
         )}
       </div>
 
-      {/* Reproduction Steps */}
       {stepsList.length > 0 && (
         <div className="mt-3.5 border-t border-theme-border/50 pt-3">
           <div className="mb-1.5 flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-theme-muted">

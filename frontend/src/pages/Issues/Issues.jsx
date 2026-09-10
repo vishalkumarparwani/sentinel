@@ -107,11 +107,8 @@ export default function Issues() {
     await loadIssues();
   }
 
-  async function handleToggleStatus(item) {
-    let nextStatus = "planning";
-
-    if (item.status === "planning") nextStatus = "in_progress";
-    else if (item.status === "in_progress") nextStatus = "done";
+  async function handleToggleStatus(item, selectedStatus) {    
+    let nextStatus = selectedStatus || "planning";
 
     await updateIssue(item.id, { ...item, status: nextStatus });
     await loadIssues();
@@ -258,7 +255,7 @@ export default function Issues() {
                 item={item}
                 isHighlighted={item.id === highlightedId}
                 onEdit={() => setEditingItem(item)}
-                onToggleStatus={() => handleToggleStatus(item)}
+                onToggleStatus={(selectedStatus) => handleToggleStatus(item, selectedStatus)}
                 onDelete={() => handleDeleteIssue(item.id)}
               />
             )

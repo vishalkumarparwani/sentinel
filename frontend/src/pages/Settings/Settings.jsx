@@ -62,7 +62,7 @@ export default function Settings() {
             </h2>
 
             <p className="text-xs text-theme-muted">
-              Your Contexture login
+              Your Sentinel login
             </p>
           </div>
         </div>
