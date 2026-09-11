@@ -32,11 +32,6 @@ class IssueStatus(str, Enum):
     in_progress = "in_progress"
     done = "done"
 
-class IssuePriority(str, Enum):
-    high = "High"
-    medium = "Medium"
-    low = "Low"
-
 class IssueSeverity(str, Enum):
     P1 = "P1"
     P2 = "P2"
@@ -46,7 +41,6 @@ class IssueSeverity(str, Enum):
 class IssueCreate(BaseModel):
     title: str
     service: str
-    priority: IssuePriority = IssuePriority.medium
     status: IssueStatus = IssueStatus.planning
     due_date: date | None = None
     severity: IssueSeverity = IssueSeverity.P3
@@ -56,7 +50,6 @@ class IssueCreate(BaseModel):
 class IssueUpdate(BaseModel):
     title: str
     service: str
-    priority: str
     status: str
     due_date: date | None
     severity: str | None = None
@@ -70,7 +63,6 @@ class IssueOut(BaseModel):
     description: str | None = None
     service: str
 
-    priority: str
     severity: str | None = None
     status: str
 
@@ -80,7 +72,6 @@ class IssueOut(BaseModel):
     user_id: int | None = None
 
     ai_summary: str | None = None
-    ai_priority_reason: str | None = None
     ai_severity_reason: str | None = None
     ai_confidence: float | None = None
 

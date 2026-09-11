@@ -14,9 +14,11 @@ Only treat the input as an issue if it describes a bug, error, failure, unexpect
 If the input is NOT an issue (for example: "hi", "hello", "thanks", casual conversation, or a general question), return a neutral result with:
 - title: "No issue reported"
 - service: "General"
-- priority: "Low"
 - severity: "P4"
 - reproduction_steps: ""
+- ai_summary: ""
+- ai_severity_reason: ""
+- ai_confidence: ""
 
 For a valid issue, infer the fields conservatively from the information provided. Do not invent reproduction steps or specific technical details that are not supported by the input.
 
@@ -25,9 +27,11 @@ Return ONLY valid JSON in this exact shape, with no other text:
 {
   "title": "short, clear issue title",
   "service": "best-guess service/component name, e.g. Authentication, Core API, Database",
-  "priority": "High" | "Medium" | "Low",
   "severity": "P1" | "P2" | "P3" | "P4",
   "reproduction_steps": "steps if mentioned, one per line, or empty string"
+  "ai_summary": "Concise summary of the issue, in 1-2 sentences, based on the input text",
+  "ai_severity_reason": "Concise explanation of why the issue was assigned this severity, in 1-2 sentences, based on the input text",
+  "ai_confidence": "float between 0.0 and 1.0 representing the model's confidence in its assessment"
 }
 """
 
