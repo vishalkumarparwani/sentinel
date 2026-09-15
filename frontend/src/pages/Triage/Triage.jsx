@@ -459,10 +459,13 @@ export default function Triage() {
                   </button>
                 ) : (
                   <>
-                    <button type="button" onClick={handleEdit} className="flex items-center gap-1.5 rounded-lg border border-theme-border bg-theme-primary px-3.5 py-2 text-xs font-medium text-theme-muted hover:bg-theme-tertiary hover:text-theme-text">
+                  
+                    {/* Edit button - currently hidden due to redundancy */}
+                    {/* <button type="button" onClick={handleEdit} className="flex items-center gap-1.5 rounded-lg border border-theme-border bg-theme-primary px-3.5 py-2 text-xs font-medium text-theme-muted hover:bg-theme-tertiary hover:text-theme-text">
                       <Pencil className="h-3.5 w-3.5" />
                       Edit Issue
-                    </button>
+                    </button> */}
+
                     <button type="button" onClick={handleCreateIssue} className="flex items-center gap-1.5 rounded-lg bg-theme-text px-3.5 py-2 text-xs font-semibold text-theme-primary hover:opacity-90">
                       <Check className="h-3.5 w-3.5" />
                       Create Issue

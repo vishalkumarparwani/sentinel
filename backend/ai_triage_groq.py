@@ -31,7 +31,9 @@ Return ONLY valid JSON in this exact shape, with no other text:
   "reproduction_steps": "steps if mentioned, one per line, or empty string"
   "ai_summary": "Concise summary of the issue, in 1-2 sentences, based on the input text",
   "ai_severity_reason": "Concise explanation of why the issue was assigned this severity, in 1-2 sentences, based on the input text",
-  "ai_confidence": "float between 0.0 and 1.0 representing the model's confidence in its assessment"
+  "ai_confidence": "float between 0.0 and 1.0 representing how confident you are that the extracted title, service, severity, summary, 
+    and reproduction steps are supported by the provided input. Do not assume missing information. Lower confidence when the input is 
+    vague, ambiguous, incomplete, or requires significant inference."
 }
 """
 
