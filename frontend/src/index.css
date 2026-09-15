@@ -31,6 +31,12 @@ body {
   background-color: var(--bg-primary);
   color: var(--text-primary);
   font-family: Inter, sans-serif;
+
+  cursor: url("/cursor-light.svg") 5 4, auto;
+}
+
+.light body {
+  cursor: url("/cursor-dark.svg") 5 4, auto;
 }
 
 .form-input:focus {

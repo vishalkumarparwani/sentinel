@@ -46,8 +46,25 @@ def extract_issue_from_text(raw_text: str) -> dict:
         ],
         response_format={"type": "json_object"},
     )
+    result = json.loads(response.choices[0].message.content) #
+    confidence = result.get("ai_confidence") 
+    try: confidence = float(confidence) 
+    except (TypeError, ValueError): 
+        confidence = 0.0
 
-    return json.loads(response.choices[0].message.content)
+    confidence = max(0.0, min(1.0, confidence)) 
+    
+    result["ai_confidence"] = confidence 
+
+    if confidence >= 0.80: 
+        result["ai_confidence_level"] = "High" 
+    elif confidence >= 0.60: 
+        result["ai_confidence_level"] = "Moderate" 
+    else: 
+        result["ai_confidence_level"] = "Low"
+
+    return result
+
 
 
 

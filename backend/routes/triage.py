@@ -1,11 +1,11 @@
 from fastapi import APIRouter, HTTPException
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from ai_triage_groq import extract_issue_from_text
 
 router = APIRouter(prefix="/triage", tags=["triage"])
 
 class TriageRequest(BaseModel):
-    raw_text: str
+    raw_text: str = Field(min_length=1)
 
 @router.post("/")
 def run_triage(request: TriageRequest):

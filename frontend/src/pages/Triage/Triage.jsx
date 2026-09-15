@@ -144,7 +144,11 @@ export default function Triage() {
 
   const noIssueFound = issue?.title === "No issue reported";
   const steps = normalizeSteps(issue?.reproduction_steps);
-  const confidence = typeof issue?.ai_confidence === "number" ? Math.round(issue.ai_confidence * 100) : null;
+  const confidence = typeof issue?.ai_confidence === "number"
+    ? Math.round(issue.ai_confidence * 100)
+    : null;
+
+  const confidenceLevel = issue?.ai_confidence_level || null;
 
   return (
     <div className="mx-auto max-w-7xl space-y-6">
@@ -386,10 +390,23 @@ export default function Triage() {
 
                 <div className="space-y-1">
                   <h3 className="wrap-anywhere text-sm font-bold leading-snug text-theme-text">{issue.title || "Untitled Issue"}</h3>
-                  {confidence !== null && (
-                    <span className="text-[10px] text-theme-muted">
-                      AI confidence: <span className="font-semibold text-emerald-500">{confidence}%</span>
-                    </span>
+                  {confidenceLevel && (
+                    <div className="mt-1 flex items-center gap-1.5 text-[10px] text-theme-muted">
+                      <Brain className="h-3 w-3 text-amber-400" />
+                      <span>
+                        AI Confidence:
+                        <span
+                          className={`ml-1 font-semibold ${confidenceLevel === "High"
+                              ? "text-emerald-500"
+                              : confidenceLevel === "Moderate"
+                                ? "text-amber-400"
+                                : "text-rose-400"
+                            }`}
+                        >
+                          {confidenceLevel}
+                        </span>
+                      </span>
+                    </div>
                   )}
                 </div>
 
@@ -459,13 +476,6 @@ export default function Triage() {
                   </button>
                 ) : (
                   <>
-                  
-                    {/* Edit button - currently hidden due to redundancy */}
-                    {/* <button type="button" onClick={handleEdit} className="flex items-center gap-1.5 rounded-lg border border-theme-border bg-theme-primary px-3.5 py-2 text-xs font-medium text-theme-muted hover:bg-theme-tertiary hover:text-theme-text">
-                      <Pencil className="h-3.5 w-3.5" />
-                      Edit Issue
-                    </button> */}
-
                     <button type="button" onClick={handleCreateIssue} className="flex items-center gap-1.5 rounded-lg bg-theme-text px-3.5 py-2 text-xs font-semibold text-theme-primary hover:opacity-90">
                       <Check className="h-3.5 w-3.5" />
                       Create Issue

@@ -13,13 +13,11 @@ import {
   ArrowUpRight,
   Plus,
   BrainCircuit,
-  Sparkles,
 } from "lucide-react";
 
 export default function Dashboard() {
   const [issues, setIssues] = useState([]);
   const [error, setError] = useState(null);
-
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -28,86 +26,95 @@ export default function Dashboard() {
         const data = await getIssues();
         setIssues(data);
       } catch (err) {
-        console.error("Dashboard Error:", err);
         setError("Failed to load dashboard data.");
       }
     }
-
     fetchData();
   }, []);
 
-  const openIssues = issues.filter(
-    (issue) => issue.status !== "done"
-  );
+  const total = issues.length;
 
-  const criticalIssues = issues.filter(
-    (issue) =>
-      issue.severity === "P1" &&
-      issue.status !== "done"
-  );
+  const weekAgo = new Date();
+  weekAgo.setDate(weekAgo.getDate() - 7);
+  const newThisWeek = issues.filter((i) => new Date(i.created_at) >= weekAgo).length;
 
-  const servicesAffected = new Set(
-    issues
-      .map((issue) => issue.service)
-      .filter(Boolean)
-  ).size;
+  const planning = issues.filter((i) => i.status === "planning").length;
+  const inProgress = issues.filter((i) => i.status === "in_progress").length;
+  const done = issues.filter((i) => i.status === "done").length;
 
-  /*
-   * Accent colors intentionally use 500-level colors rather than
-   * dark-only 950 backgrounds or very-light 200 text.
-   *
-   * This keeps them readable in both light and dark themes.
-   */
+  const openIssues = issues.filter((i) => i.status !== "done");
+  const openCount = openIssues.length;
+  const openPercent = total > 0 ? Math.round((openCount / total) * 100) : 0;
+
+  const p1Open = openIssues.filter((i) => i.severity === "P1").length;
+  const p2Open = openIssues.filter((i) => i.severity === "P2").length;
+  const criticalUnresolved = p1Open + p2Open;
+
+  const serviceNames = [...new Set(issues.map((i) => i.service))];
+  const servicesAffected = serviceNames.length;
+
+  const servicesWithCritical = serviceNames.filter((name) =>
+    issues.some((i) => i.service === name && i.severity === "P1" && i.status !== "done")
+  ).length;
+
+  let mostAffected = null;
+  let mostAffectedCount = 0;
+  serviceNames.forEach((name) => {
+    const count = issues.filter((i) => i.service === name).length;
+    if (count > mostAffectedCount) {
+      mostAffectedCount = count;
+      mostAffected = name;
+    }
+  });
+
   const stats = [
     {
       title: "Total Issues",
-      value: issues.length,
-      description: `${issues.length} tracked overall`,
+      value: total,
+      trend: newThisWeek > 0 ? { label: `+${newThisWeek} this week`, tone: "success" } : null,
+      breakdown: `${planning} Planning · ${inProgress} In Progress · ${done} Done`,
       icon: GitBranch,
-      iconStyle:
-        "text-sky-500 bg-sky-500/10 border border-sky-500/20",
+      iconStyle: "text-sky-400 bg-sky-950/50",
     },
     {
       title: "Critical Issues",
-      value: criticalIssues.length,
-      description: "Needing immediate attention",
+      value: criticalUnresolved,
+      valueColor: criticalUnresolved > 0 ? "text-rose-400" : "text-theme-text",
+      breakdown: `P1: ${p1Open} · P2: ${p2Open}`,
       icon: AlertTriangle,
-      iconStyle:
-        "text-rose-500 bg-rose-500/10 border border-rose-500/20",
+      iconStyle: "text-rose-400 bg-rose-950/50",
     },
     {
       title: "Open Issues",
-      value: openIssues.length,
-      description: "Not yet resolved",
+      value: openCount,
+      trend: total > 0 ? { label: `${openPercent}% of all issues`, tone: "success" } : null,
+      breakdown: `${planning} Planning · ${inProgress} In Progress`,
       icon: Clock3,
-      iconStyle:
-        "text-amber-500 bg-amber-500/10 border border-amber-500/20",
+      iconStyle: "text-amber-400 bg-amber-950/50",
     },
     {
       title: "Services Affected",
       value: servicesAffected,
-      description: "Distinct services with issues",
+      breakdown:
+        servicesWithCritical > 0
+          ? `${servicesWithCritical} with critical issues${mostAffected ? ` · Most affected: ${mostAffected}` : ""}`
+          : mostAffected
+          ? `Most affected: ${mostAffected}`
+          : "No services affected",
       icon: Boxes,
-      iconStyle:
-        "text-violet-500 bg-violet-500/10 border border-violet-500/20",
+      iconStyle: "text-violet-400 bg-violet-950/50",
     },
   ];
 
   const recentIssues = issues.slice(0, 4);
 
   const insightText =
-    criticalIssues.length > 0
-      ? `${criticalIssues.length} critical issue${
-          criticalIssues.length > 1 ? "s" : ""
-        } need attention. Check the Issues page to triage them.`
+    criticalUnresolved > 0
+      ? `${criticalUnresolved} critical issue${criticalUnresolved > 1 ? "s" : ""} need attention. Check the Issues page to triage them.`
       : "No critical issues right now. Everything looks stable.";
 
   return (
     <div className="mx-auto mt-6 max-w-7xl space-y-8 px-8 xl:px-12">
-      {/* ========================================================= */}
-      {/* HEADER                                                    */}
-      {/* ========================================================= */}
-
       <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight text-theme-text">
@@ -115,89 +122,57 @@ export default function Dashboard() {
           </h1>
 
           <p className="mt-2 max-w-2xl text-sm leading-6 text-theme-muted">
-            Monitor issue health, service risk, and engineering
-            throughput across your product.
+            Monitor issue health, service risk, and engineering throughput across your product.
           </p>
         </div>
 
         <button
-          type="button"
           onClick={() => navigate("/issues")}
-          className="flex items-center gap-2 rounded-xl bg-theme-text px-5 py-3 text-sm font-semibold text-theme-primary shadow-sm transition-opacity hover:opacity-90"
+          className="flex items-center gap-2 rounded-xl bg-theme-text px-5 py-3 text-sm font-semibold text-theme-primary transition hover:opacity-90"
         >
           <Plus size={16} />
           Report New Issue
         </button>
       </div>
 
-      {/* ========================================================= */}
-      {/* ERROR                                                     */}
-      {/* ========================================================= */}
-
       {error && (
-        <div className="flex items-center gap-2 rounded-lg border border-rose-500/20 bg-rose-500/5 px-4 py-2.5 text-xs text-rose-500">
-          <AlertTriangle className="h-3.5 w-3.5 shrink-0" />
+        <div className="rounded-lg border border-rose-900/40 bg-rose-950/20 px-4 py-2.5 text-xs text-rose-400">
           {error}
         </div>
       )}
 
-      {/* ========================================================= */}
-      {/* ENGINEERING INSIGHT                                       */}
-      {/* ========================================================= */}
+      <div className="flex items-start gap-4 rounded-2xl border border-indigo-900/40 bg-linear-to-r from-indigo-950/40 via-theme-secondary to-theme-secondary p-6">
+        <div className="rounded-xl bg-indigo-500/10 p-3 text-indigo-400">
+          <BrainCircuit size={22} />
+        </div>
 
-      <div className="relative overflow-hidden rounded-2xl border border-indigo-500/20 bg-theme-secondary/50 p-5 sm:p-6">
-        {/* Subtle accent glow */}
-        <div className="pointer-events-none absolute -right-16 -top-20 h-40 w-40 rounded-full bg-indigo-500/5 blur-3xl" />
+        <div className="flex-1">
+          <h3 className="font-semibold text-indigo-200">
+            Engineering Insight
+          </h3>
 
-        <div className="relative flex items-start gap-4">
-          {/* Icon */}
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-indigo-500/20 bg-indigo-500/10 text-indigo-500">
-            <BrainCircuit size={20} />
-          </div>
-
-          {/* Content */}
-          <div className="min-w-0 flex-1">
-            <div className="flex flex-wrap items-center gap-2">
-              <h3 className="text-sm font-semibold text-theme-text">
-                Engineering Insight
-              </h3>
-
-              <span className="inline-flex items-center gap-1 rounded-full border border-indigo-500/20 bg-indigo-500/10 px-2 py-0.5 text-[9px] font-medium uppercase tracking-wide text-indigo-500">
-                <Sparkles className="h-2.5 w-2.5" />
-                Sentinel AI
-              </span>
-            </div>
-
-            <p className="mt-1 text-xs leading-5 text-theme-muted">
-              {insightText}
-            </p>
-          </div>
+          <p className="mt-1 text-sm leading-6 text-theme-muted">
+            {insightText}
+          </p>
         </div>
       </div>
 
-      {/* ========================================================= */}
-      {/* STATS                                                     */}
-      {/* ========================================================= */}
-
       <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
-        {stats.map((stat) => (
+        {stats.map((stat, index) => (
           <DashboardCard
-            key={stat.title}
+            key={index}
             title={stat.title}
             value={stat.value}
-            description={stat.description}
+            valueColor={stat.valueColor}
+            trend={stat.trend}
+            breakdown={stat.breakdown}
             icon={stat.icon}
             iconStyle={stat.iconStyle}
           />
         ))}
       </div>
 
-      {/* ========================================================= */}
-      {/* MAIN CONTENT                                              */}
-      {/* ========================================================= */}
-
       <div className="grid gap-6 lg:grid-cols-3">
-        {/* Recent Issues */}
         <div className="rounded-2xl border border-theme-border bg-theme-secondary/30 p-6 lg:col-span-2">
           <div className="flex items-center justify-between border-b border-theme-border pb-5">
             <div>
@@ -206,14 +181,13 @@ export default function Dashboard() {
               </h3>
 
               <p className="mt-1 text-xs text-theme-muted">
-                Highest-severity issues currently open across your
-                services.
+                Highest-severity issues currently open across your services.
               </p>
             </div>
 
             <Link
               to="/issues"
-              className="flex items-center gap-1 text-xs font-medium text-theme-muted transition-colors hover:text-theme-text"
+              className="flex items-center gap-1 text-xs font-medium text-theme-muted transition hover:text-theme-text"
             >
               View all
               <ArrowUpRight size={13} />
@@ -227,16 +201,12 @@ export default function Dashboard() {
               </p>
             ) : (
               recentIssues.map((issue) => (
-                <UpcomingIssueCard
-                  key={issue.id}
-                  issue={issue}
-                />
+                <UpcomingIssueCard key={issue.id} issue={issue} />
               ))
             )}
           </div>
         </div>
 
-        {/* Pomodoro */}
         <div>
           <Pomodoro />
         </div>
