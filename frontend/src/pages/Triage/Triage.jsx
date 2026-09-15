@@ -119,35 +119,39 @@ export default function Triage() {
   }
 
   async function handleCreateIssue() {
-    if (!issue?.title?.trim()) {
-      setError("Issue title is required.");
-      return;
-    }
-    try {
-      setError(null);
-      const payload = {
-        ...issue,
-        title: issue.title.trim(),
-        description: issue.description?.trim() || "",
-        service: issue.service?.trim() || "",
-        reproduction_steps: normalizeSteps(issue.reproduction_steps).join("\n"),
-        severity: issue.severity || "P3",
-        status: issue.status || "planning",
-        due_date: issue.due_date || null,
-      };
-      await createIssue(payload);
-      setSaved(true);
-    } catch (err) {
-      setError("Failed to save issue. Please try again.");
-    }
+  if (!issue?.title?.trim()) {
+    setError("Issue title is required.");
+    return;
   }
+
+  try {
+    setError(null);
+
+    const payload = {
+      title: issue.title.trim(),
+      description: issue.description?.trim() || "",
+      service: issue.service?.trim() || "",
+      reproduction_steps: normalizeSteps(issue.reproduction_steps).join("\n"),
+      severity: issue.severity || "P3",
+      status: issue.status || "planning",
+      due_date: issue.due_date || null,
+    };
+
+    console.log("CREATE ISSUE PAYLOAD:", payload);
+
+    const result = await createIssue(payload);
+
+    console.log("CREATE ISSUE RESPONSE:", result);
+
+    setSaved(true);
+  } catch (err) {
+    console.error("CREATE ISSUE FAILED:", err);
+    setError(err?.message || "Failed to save issue. Please try again.");
+  }
+}
 
   const noIssueFound = issue?.title === "No issue reported";
   const steps = normalizeSteps(issue?.reproduction_steps);
-  const confidence = typeof issue?.ai_confidence === "number"
-    ? Math.round(issue.ai_confidence * 100)
-    : null;
-
   const confidenceLevel = issue?.ai_confidence_level || null;
 
   return (
@@ -397,10 +401,10 @@ export default function Triage() {
                         AI Confidence:
                         <span
                           className={`ml-1 font-semibold ${confidenceLevel === "High"
-                              ? "text-emerald-500"
-                              : confidenceLevel === "Moderate"
-                                ? "text-amber-400"
-                                : "text-rose-400"
+                            ? "text-emerald-500"
+                            : confidenceLevel === "Moderate"
+                              ? "text-amber-400"
+                              : "text-rose-400"
                             }`}
                         >
                           {confidenceLevel}

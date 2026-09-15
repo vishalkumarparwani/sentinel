@@ -29,7 +29,6 @@ def create_issue(new_issue: IssueCreate, db: Session = Depends(get_db)):
     db_issue = Issue(
         title=new_issue.title,
         service=new_issue.service,
-        priority=new_issue.priority,
         status=new_issue.status,
         severity=new_issue.severity,
         due_date=new_issue.due_date,

@@ -17,14 +17,16 @@ class Issue(Base):
     id = Column(Integer, primary_key=True, index=True)
     title = Column(String, nullable=False)
 
+    description = Column(String, nullable=True)
     service = Column(String, nullable=False)
-    priority = Column(String, nullable=False)
 
     due_date = Column(Date)
     status = Column(String, nullable=False, default="planning")
     completed = Column(Boolean, nullable=False, default=False)
+
     severity = Column(String, nullable=True, default="P3")
     reproduction_steps = Column(String, nullable=True)
+
     created_at = Column(DateTime, server_default=func.now())
 
     user_id = Column(Integer, ForeignKey("users.id"))

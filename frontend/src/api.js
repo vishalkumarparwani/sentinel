@@ -11,12 +11,24 @@ export async function getIssues() {
 export async function createIssue(item_data) {
     const response = await fetch(`${BASE_URL}/issues/`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+            "Content-Type": "application/json",
+        },
         body: JSON.stringify(item_data),
     });
+
     if (!response.ok) {
-        throw new Error(`Failed to create item: ${response.status}`);
+        const error = await response.text();
+
+        console.error("CREATE ISSUE STATUS:", response.status);
+        console.error("CREATE ISSUE RESPONSE:", error);
+        console.error("CREATE ISSUE PAYLOAD:", item_data);
+
+        throw new Error(
+            error || `Failed to create item: ${response.status}`
+        );
     }
+
     return response.json();
 }
 
