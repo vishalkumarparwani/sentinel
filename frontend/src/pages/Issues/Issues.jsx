@@ -6,9 +6,6 @@ import { getIssues, createIssue, updateIssue, deleteIssue } from "../../api";
 import {
   Plus,
   Search,
-  Filter,
-  ArrowUpDown,
-  ChevronDown,
   CheckCircle2,
   X,
 } from "lucide-react";
@@ -22,7 +19,7 @@ export default function Issues() {
 
   const location = useLocation();
   const navigate = useNavigate();
-
+  
   const [highlightedId, setHighlightedId] = useState(
     location.state?.highlightId || null
   );
@@ -36,6 +33,7 @@ export default function Issues() {
     });
   }, []);
 
+  // Highlight the issue for a brief moment when navigated from another page
   useEffect(() => {
     if (highlightedId === null) return;
 
@@ -46,6 +44,7 @@ export default function Issues() {
     return () => clearTimeout(timer);
   }, [highlightedId]);
 
+  // Load issues on component mount
   useEffect(() => {
     async function fetchData() {
       try {
@@ -63,6 +62,7 @@ export default function Issues() {
     setIssues(data);
   }
 
+  // Filter issues based on status and search query
   const filteredIssues = issues
     .filter((item) => {
       if (statusFilter === "planning") return item.status === "planning";
@@ -106,13 +106,33 @@ export default function Issues() {
     await deleteIssue(id);
     await loadIssues();
   }
-
-  async function handleToggleStatus(item, selectedStatus) {    
+  // Handle status toggle for an issue
+  async function handleToggleStatus(item, selectedStatus) {
     let nextStatus = selectedStatus || "planning";
 
     await updateIssue(item.id, { ...item, status: nextStatus });
     await loadIssues();
   }
+
+  // Issues Refresh functionality
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [refreshSuccess, setRefreshSuccess] = useState(false);
+
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    setRefreshSuccess(false);
+
+    try {
+      await loadIssues();
+      setRefreshSuccess(true);
+
+      setTimeout(() => {
+        setRefreshSuccess(false);
+      }, 2000);
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
 
   return (
     <div className="mx-auto mt-6 max-w-7xl space-y-8 px-8 xl:px-12">
@@ -168,26 +188,14 @@ export default function Issues() {
             className="w-full rounded-lg border border-theme-border/80 bg-theme-secondary/60 py-2 pl-9 pr-3 text-xs text-theme-text placeholder-theme-muted outline-none transition-all focus:border-theme-text/40"
           />
         </div>
-
-        <div className="flex items-center gap-2.5">
-          <button className="flex items-center gap-1.5 rounded-lg border border-theme-border/80 bg-theme-secondary/60 px-3 py-1.5 text-xs text-theme-muted transition-colors hover:bg-theme-secondary hover:text-theme-text">
-            <Filter size={13} />
-            Filter
-          </button>
-
-          <button className="flex items-center gap-1.5 rounded-lg border border-theme-border/80 bg-theme-secondary/60 px-3 py-1.5 text-xs text-theme-muted transition-colors hover:bg-theme-secondary hover:text-theme-text">
-            <ArrowUpDown size={13} />
-            <ChevronDown size={12} />
-          </button>
-        </div>
       </div>
 
       <div className="flex items-center gap-2 border-b border-theme-border pb-3">
         <button
           onClick={() => setStatusFilter("all")}
           className={`rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${statusFilter === "all"
-              ? "border border-theme-border bg-theme-tertiary text-theme-text"
-              : "text-theme-muted hover:bg-theme-secondary hover:text-theme-text"
+            ? "border border-theme-border bg-theme-tertiary text-theme-text"
+            : "text-theme-muted hover:bg-theme-secondary hover:text-theme-text"
             }`}
         >
           All ({issues.length})
@@ -196,8 +204,8 @@ export default function Issues() {
         <button
           onClick={() => setStatusFilter("planning")}
           className={`rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${statusFilter === "planning"
-              ? "border border-theme-border bg-theme-tertiary text-theme-text"
-              : "text-theme-muted hover:bg-theme-secondary hover:text-theme-text"
+            ? "border border-theme-border bg-theme-tertiary text-theme-text"
+            : "text-theme-muted hover:bg-theme-secondary hover:text-theme-text"
             }`}
         >
           Planning ({issues.filter((i) => i.status === "planning").length})
@@ -206,8 +214,8 @@ export default function Issues() {
         <button
           onClick={() => setStatusFilter("in_progress")}
           className={`rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${statusFilter === "in_progress"
-              ? "border border-theme-border bg-theme-tertiary text-theme-text"
-              : "text-theme-muted hover:bg-theme-secondary hover:text-theme-text"
+            ? "border border-theme-border bg-theme-tertiary text-theme-text"
+            : "text-theme-muted hover:bg-theme-secondary hover:text-theme-text"
             }`}
         >
           In Progress (
@@ -217,11 +225,23 @@ export default function Issues() {
         <button
           onClick={() => setStatusFilter("done")}
           className={`rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${statusFilter === "done"
-              ? "border border-theme-border bg-theme-tertiary text-theme-text"
-              : "text-theme-muted hover:bg-theme-secondary hover:text-theme-text"
+            ? "border border-theme-border bg-theme-tertiary text-theme-text"
+            : "text-theme-muted hover:bg-theme-secondary hover:text-theme-text"
             }`}
         >
           Done ({issues.filter((i) => i.status === "done").length})
+        </button>
+
+        <button
+          onClick={handleRefresh}
+          disabled={isRefreshing}
+          className="ml-auto rounded-lg px-3 py-1.5 text-xs font-medium text-theme-muted transition-colors hover:bg-theme-secondary hover:text-theme-text disabled:opacity-50"
+        >
+          {isRefreshing
+            ? "Refreshing..."
+            : refreshSuccess
+              ? "✓ Refreshed"
+              : "Refresh"}
         </button>
       </div>
 

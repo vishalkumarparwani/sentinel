@@ -18,7 +18,7 @@ const statusConfig = {
   in_progress: {
     label: "In Progress",
     color:
-      "text-amber-600 border-amber-500/20 bg-amber-200/10 hover:bg-amber-500/20",
+      "text-amber-600 border-amber-500/20 bg-amber-600/10 hover:bg-amber-500/20",
   },
   done: {
     label: "Done",
