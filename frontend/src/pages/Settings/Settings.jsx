@@ -79,14 +79,13 @@ export default function Settings() {
 
         <button
           onClick={handleLogout}
-          className="flex items-center gap-2 text-xs font-medium text-rose-400 hover:text-rose-300 transition-colors cursor-pointer"
+          className="flex items-center gap-2 text-xs font-medium text-rose-400 hover:text-rose-300 transition-colors"
         >
           <LogOut className="w-3.5 h-3.5" />
           Log Out
         </button>
       </div>
 
-      {/* Appearance */}
       <div className="bg-theme-secondary/60 border border-theme-border rounded-xl p-6 space-y-5">
         <div className="flex items-center gap-3 pb-3 border-b border-theme-border">
           <div className="p-2 rounded-lg bg-indigo-500/10 text-indigo-400">
@@ -107,7 +106,7 @@ export default function Settings() {
         <div className="grid grid-cols-2 gap-4 max-w-md">
           <button
             onClick={() => handleThemeChange("dark")}
-            className={`p-4 rounded-xl border flex items-center gap-3 text-xs font-medium transition-all cursor-pointer ${
+            className={`p-4 rounded-xl border flex items-center gap-3 text-xs font-medium transition-all ${
               user?.theme === "dark"
                 ? "border-amber-500/50 bg-theme-secondary text-theme-text shadow-md"
                 : "border-theme-border bg-theme-primary text-theme-muted hover:text-theme-text hover:bg-theme-secondary"
@@ -119,7 +118,7 @@ export default function Settings() {
 
           <button
             onClick={() => handleThemeChange("light")}
-            className={`p-4 rounded-xl border flex items-center gap-3 text-xs font-medium transition-all cursor-pointer ${
+            className={`p-4 rounded-xl border flex items-center gap-3 text-xs font-medium transition-all ${
               user?.theme === "light"
                 ? "border-amber-500/50 bg-theme-tertiary text-theme-text shadow-md"
                 : "border-theme-border bg-theme-primary text-theme-muted hover:text-theme-text hover:bg-theme-secondary"

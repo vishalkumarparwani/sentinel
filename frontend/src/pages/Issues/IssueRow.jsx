@@ -160,7 +160,7 @@ export default function IssueRow({
       </div>
 
       <div className="mt-2 flex items-center gap-2 flex-wrap">
-        <span className="cursor-pointer font-mono text-[11px] font-semibold text-theme-muted transition-colors hover:text-theme-text">
+        <span className="font-mono text-[11px] font-semibold text-theme-muted transition-colors hover:text-theme-text">
           ISS-{item.id}
         </span>
 

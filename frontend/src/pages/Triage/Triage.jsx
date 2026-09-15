@@ -430,7 +430,7 @@ export default function Triage() {
 
                 {issue.ai_severity_reason && (
                   <details className="group rounded-lg border border-theme-border/60 bg-theme-primary/30">
-                    <summary className="flex cursor-pointer list-none items-center justify-between px-3 py-2.5 text-[10px] font-semibold text-theme-muted hover:text-theme-text">
+                    <summary className="flex list-none items-center justify-between px-3 py-2.5 text-[10px] font-semibold text-theme-muted hover:text-theme-text">
                       <span className="flex items-center gap-1.5">
                         <Brain className="h-3.5 w-3.5 text-amber-400" />
                         Why this severity?

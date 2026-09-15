@@ -1,21 +1,27 @@
 @import "tailwindcss";
 
 :root {
+
   --bg-primary: #09090b;
   --bg-secondary: #18181b;
   --bg-tertiary: #27272a;
+
   --border-color: #27272a;
+
   --text-primary: #f4f4f5;
   --text-secondary: #a1a1aa;
 }
 
 .light {
-  --bg-primary: #ffffff;
-  --bg-secondary: #f4f4f5;
-  --bg-tertiary: #e4e4e7;
-  --border-color: #d4d4d8;
+
+  --bg-primary: #f1f2f4;
+  --bg-secondary: #fafafa;
+  --bg-tertiary: #e7e8eb;
+
+  --border-color: #d7d9dd;
+
   --text-primary: #18181b;
-  --text-secondary: #52525b;
+  --text-secondary: #686b73;
 }
 
 @theme {
@@ -37,6 +43,19 @@ body {
 
 .light body {
   cursor: url("/cursor-dark.svg") 5 4, auto;
+}
+
+
+button,
+a,
+[role="button"] {
+  cursor: url("/cursor-light.svg") 5 4, auto !important;
+}
+
+.light button,
+.light a,
+.light [role="button"] {
+  cursor: url("/cursor-dark.svg") 5 4, auto !important;
 }
 
 .form-input:focus {
