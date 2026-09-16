@@ -106,5 +106,4 @@ The Triage page accepts raw, unstructured text and extracts a structured issue u
 ## Roadmap / Known Limitations
 
 - Services are derived from the free-text `service` field on issues rather than a dedicated `Service` model — inconsistent naming (e.g. "Auth" vs "Authentication") can fragment grouping
-- Light/Dark theme is persisted per-user in the database but not yet applied visually across all pages
 - Backend routes are not yet protected with authentication middleware — only the frontend UI is gated
