@@ -87,6 +87,7 @@ GROQ_API_KEY=your-groq-api-key
 docker compose up --build
 ```
 
+For Local PC:
 - Frontend: http://localhost:5173
 - Backend: http://127.0.0.1:8000
 
