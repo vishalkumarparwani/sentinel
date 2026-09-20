@@ -55,7 +55,7 @@ sentinel/
 │   └── src/
 │       ├── pages/
 │       │   ├── Auth/        # Login, Register
-│       │   ├── Dashboard/   # Dashboard, DashboardCard, UpcomingIssues, Pomodoro
+│       │   ├── Dashboard/   # Dashboard, DashboardCard, UpcomingIssues, Pomodoro['Pomodoro': 'DISCONTINUED']
 │       │   ├── Issues/      # Issues, IssueRow, IssueForm
 │       │   ├── Services/    # Services
 │       │   └── Triage/      # Triage
