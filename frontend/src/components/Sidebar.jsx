@@ -16,6 +16,7 @@ export default function Sidebar(props) {
         { title: "Issues", path: "/issues", icon: ListTodo },
         { title: "Services", path: "/services", icon: FolderKanban },
         { title: "Triage", path: "/triage", icon: Wand2 },
+        { title: "AI Assistant", path: "/ai", icon: Wand2 },
         { title: "Settings", path: "/settings", icon: SettingsIcon },
     ];
 

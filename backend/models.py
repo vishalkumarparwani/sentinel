@@ -1,7 +1,9 @@
 from database import Base
-from sqlalchemy import Column, Integer, String, Boolean, Date, ForeignKey, DateTime
+from sqlalchemy import Column, Integer, String, Boolean, Date, ForeignKey, DateTime, Text
 from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
+
+
 class User(Base):
     __tablename__ = "users"
 
@@ -10,6 +12,14 @@ class User(Base):
     hashed_password = Column(String, nullable=False)
 
     theme = Column(String, default="dark")
+
+    issues = relationship("Issue", back_populates="owner")
+    conversations = relationship(
+        "Conversation",
+        back_populates="user",
+        cascade="all, delete-orphan"
+    )
+
 
 class Issue(Base):
     __tablename__ = "tasks"
@@ -30,4 +40,51 @@ class Issue(Base):
     created_at = Column(DateTime, server_default=func.now())
 
     user_id = Column(Integer, ForeignKey("users.id"))
-    owner = relationship("User")
+    owner = relationship("User", back_populates="issues")
+
+
+class Conversation(Base):
+    __tablename__ = "ai_conversations"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
+
+    title = Column(String, nullable=False, default="New Chat")
+
+    created_at = Column(DateTime, server_default=func.now())
+    updated_at = Column(
+        DateTime,
+        server_default=func.now(),
+        onupdate=func.now()
+    )
+
+    user = relationship("User", back_populates="conversations")
+
+    messages = relationship(
+        "Message",
+        back_populates="conversation",
+        cascade="all, delete-orphan",
+        order_by="Message.created_at"
+    )
+
+
+class Message(Base):
+    __tablename__ = "ai_messages"
+
+    id = Column(Integer, primary_key=True, index=True)
+    conversation_id = Column(
+        Integer,
+        ForeignKey("ai_conversations.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True
+    )
+
+    role = Column(String, nullable=False)
+    content = Column(Text, nullable=False)
+
+    created_at = Column(DateTime, server_default=func.now())
+
+    conversation = relationship(
+        "Conversation",
+        back_populates="messages"
+    )

@@ -2,7 +2,7 @@ from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from database import Base, engine
-from routes import issues, services, triage, auth, users
+from routes import issues, services, triage, auth, users, ai
 
 Base.metadata.create_all(bind=engine)
 
@@ -32,3 +32,4 @@ app.include_router(users.router)
 app.include_router(issues.router)
 app.include_router(services.router)
 app.include_router(triage.router)
+app.include_router(ai.router)

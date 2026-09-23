@@ -77,3 +77,44 @@ class IssueOut(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+from typing import List, Optional
+
+class AIMessageCreate(BaseModel):
+    content: str
+
+
+class AIMessageOut(BaseModel):
+    id: int
+    role: str
+    content: str
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+class ConversationCreate(BaseModel):
+    title: str = "New Chat"
+
+
+class ConversationRename(BaseModel):
+    title: str
+
+
+class ConversationOut(BaseModel):
+    id: int
+    title: str
+    created_at: datetime
+    updated_at: datetime
+    messages: List[AIMessageOut] = []
+
+    class Config:
+        from_attributes = True
+
+
+class AIModelOut(BaseModel):
+    id: str
+    name: str
+    provider: str

@@ -1,41 +1,33 @@
-export interface ModelCapabilities {
+export type AIProvider = "groq";
+
+export interface AIModelCapabilities {
   text: boolean;
   vision: boolean;
   files: boolean;
 }
 
 export interface AIModel {
-  provider: string;
+  provider: AIProvider;
   provider_name: string;
   model: string;
   display_name: string;
-  status: 'available' | 'api_key_required' | 'rate_limited' | 'unavailable';
-  capabilities: ModelCapabilities;
-}
-
-export interface Attachment {
-  id: string;
-  filename: string;
-  file_type: string;
-  file_size?: number;
-  previewUrl?: string;
+  status: "available" | "unavailable";
+  capabilities: AIModelCapabilities;
 }
 
 export interface Message {
-  id: string;
-  role: 'user' | 'assistant' | 'system';
+  id: number | string;
+  conversation_id: number;
+  role: "user" | "assistant";
   content: string;
-  provider?: string;
-  model?: string;
-  status?: 'pending' | 'streaming' | 'completed' | 'failed';
+  model?: string | null;
   created_at?: string;
-  attachments?: Attachment[];
+  isStreaming?: boolean;
 }
 
 export interface Conversation {
-  id: string;
+  id: number;
   title: string;
-  created_at: string;
-  updated_at: string;
-  last_message_preview?: string;
+  created_at?: string;
+  updated_at?: string;
 }
