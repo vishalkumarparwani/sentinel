@@ -1,13 +1,15 @@
 import React, { useState } from "react";
-import { Outlet } from "react-router-dom";
+import { Outlet, useLocation } from "react-router-dom";
 
 import Sidebar from "../components/Sidebar";
 import Navbar from "../components/Navbar";
-import AISidebar from "../components/AISidebar";
 
 export default function MainLayout() {
     const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-    const [isAIOpen, setIsAIOpen] = useState(false);
+    const location = useLocation();
+
+    const isAIAssistantPage =
+        location.pathname === "/ai";
 
     return (
         <div className="flex h-screen bg-theme-primary text-theme-text overflow-hidden">
@@ -17,20 +19,23 @@ export default function MainLayout() {
             />
 
             <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
-                <Navbar
-                    isSidebarOpen={isSidebarOpen}
-                    setIsSidebarOpen={setIsSidebarOpen}
-                    onToggleAI={() => setIsAIOpen((prev) => !prev)}
-                />
+                {!isAIAssistantPage && (
+                    <Navbar
+                        isSidebarOpen={isSidebarOpen}
+                        setIsSidebarOpen={setIsSidebarOpen}
+                        onToggleAI={() => {}}
+                    />
+                )}
 
-                <main className="flex-1 overflow-y-auto p-6">
+                <main
+                    className={
+                        isAIAssistantPage
+                            ? "flex-1 min-h-0 overflow-hidden"
+                            : "flex-1 overflow-y-auto p-6"
+                    }
+                >
                     <Outlet />
                 </main>
-
-                <AISidebar
-                    isOpen={isAIOpen}
-                    onClose={() => setIsAIOpen(false)}
-                />
             </div>
         </div>
     );

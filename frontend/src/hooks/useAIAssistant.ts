@@ -34,35 +34,45 @@ export function useAIAssistant() {
     DEFAULT_MODEL,
   ]);
 
-  const [selectedModel, setSelectedModel] =
-    useState<AIModel>(DEFAULT_MODEL);
+  // Store only the model ID/string as the selected model.
+  const [selectedModel, setSelectedModel] = useState<string>(
+    DEFAULT_MODEL.model
+  );
 
-  const [conversations, setConversations] = useState<Conversation[]>([]);
+  const [conversations, setConversations] = useState<
+    Conversation[]
+  >([]);
+
   const [activeConversation, setActiveConversation] =
     useState<Conversation | null>(null);
 
   const [messages, setMessages] = useState<Message[]>([]);
 
-  const [isLoading, setIsLoading] = useState(true);
-  const [isGenerating, setIsGenerating] = useState(false);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [isGenerating, setIsGenerating] =
+    useState<boolean>(false);
+
   const [error, setError] = useState<string | null>(null);
 
-  const abortControllerRef = useRef<AbortController | null>(null);
+  const abortControllerRef =
+    useRef<AbortController | null>(null);
 
   const loadInitialData = useCallback(async () => {
     setIsLoading(true);
+    setError(null);
 
     try {
-      const [conversationData, modelData] = await Promise.all([
-        getConversations(),
-        getModels().catch(() => [DEFAULT_MODEL]),
-      ]);
+      const [conversationData, modelData] =
+        await Promise.all([
+          getConversations(),
+          getModels().catch(() => [DEFAULT_MODEL]),
+        ]);
 
       setConversations(conversationData);
 
       if (modelData.length > 0) {
         setModels(modelData);
-        setSelectedModel(modelData[0]);
+        setSelectedModel(modelData[0].model);
       }
     } catch (err) {
       setError(
@@ -93,15 +103,22 @@ export function useAIAssistant() {
   }, []);
 
   const selectConversation = useCallback(
-    async (conversation: Conversation) => {
+    async (conversationId: number) => {
       if (isGenerating) return;
 
       setError(null);
+
+      const conversation = conversations.find(
+        (item) => item.id === conversationId
+      );
+
+      if (!conversation) return;
+
       setActiveConversation(conversation);
       setMessages([]);
 
       try {
-        const data = await getConversation(conversation.id);
+        const data = await getConversation(conversationId);
         setMessages(data.messages);
       } catch (err) {
         setError(
@@ -111,7 +128,7 @@ export function useAIAssistant() {
         );
       }
     },
-    [isGenerating]
+    [conversations, isGenerating]
   );
 
   const sendMessage = useCallback(
@@ -155,7 +172,7 @@ export function useAIAssistant() {
           conversation_id: conversation.id,
           role: "assistant",
           content: "",
-          model: selectedModel.model,
+          model: selectedModel,
           created_at: new Date().toISOString(),
           isStreaming: true,
         };
@@ -175,7 +192,7 @@ export function useAIAssistant() {
           conversation.id,
           {
             content: trimmed,
-            model: selectedModel.model,
+            model: selectedModel,
           },
           (chunk) => {
             if (chunk.type === "content" && chunk.content) {
@@ -260,6 +277,7 @@ export function useAIAssistant() {
   const stopGeneration = useCallback(() => {
     abortControllerRef.current?.abort();
     abortControllerRef.current = null;
+
     setIsGenerating(false);
 
     setMessages((prev) =>
