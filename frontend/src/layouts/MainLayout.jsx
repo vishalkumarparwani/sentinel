@@ -1,12 +1,19 @@
 import React, { useState } from "react";
-import { Outlet, useLocation } from "react-router-dom";
+import {
+    Outlet,
+    useLocation,
+    useNavigate,
+} from "react-router-dom";
 
 import Sidebar from "../components/Sidebar";
 import Navbar from "../components/Navbar";
 
 export default function MainLayout() {
-    const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+    const [isSidebarOpen, setIsSidebarOpen] =
+        useState(true);
+
     const location = useLocation();
+    const navigate = useNavigate();
 
     const isAIAssistantPage =
         location.pathname === "/ai";
@@ -23,7 +30,7 @@ export default function MainLayout() {
                     <Navbar
                         isSidebarOpen={isSidebarOpen}
                         setIsSidebarOpen={setIsSidebarOpen}
-                        onToggleAI={() => {}}
+                        onToggleAI={() => navigate("/ai")}
                     />
                 )}
 

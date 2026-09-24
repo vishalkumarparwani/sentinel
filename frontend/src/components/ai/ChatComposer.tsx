@@ -4,6 +4,7 @@ import React, {
   type ChangeEvent,
   type KeyboardEvent,
 } from "react";
+
 import {
   Paperclip,
   Mic,
@@ -27,14 +28,19 @@ export default function ChatComposer({
   onStop,
 }: ChatComposerProps): React.ReactElement {
   const [input, setInput] = useState<string>("");
-  const [attachedFile, setAttachedFile] = useState<File | null>(null);
+  const [attachedFile, setAttachedFile] =
+    useState<File | null>(null);
 
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const fileInputRef =
+    useRef<HTMLInputElement>(null);
 
   const handleKeyDown = (
     event: KeyboardEvent<HTMLTextAreaElement>
   ): void => {
-    if (event.key === "Enter" && !event.shiftKey) {
+    if (
+      event.key === "Enter" &&
+      !event.shiftKey
+    ) {
       event.preventDefault();
       handleSubmit();
     }
@@ -53,6 +59,10 @@ export default function ChatComposer({
 
     setInput("");
     setAttachedFile(null);
+
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
   };
 
   const handleFileChange = (
@@ -74,10 +84,9 @@ export default function ChatComposer({
   };
 
   return (
-    <div className="relative flex flex-col rounded-2xl border border-zinc-800 bg-zinc-900/90 shadow-xl focus-within:border-indigo-500/50 focus-within:ring-1 focus-within:ring-indigo-500/50">
-      {/* File attachment preview */}
+    <div className="relative flex flex-col overflow-hidden rounded-2xl border border-theme-border bg-theme-secondary shadow-lg transition focus-within:border-indigo-500/50 focus-within:ring-1 focus-within:ring-indigo-500/20">
       {attachedFile && (
-        <div className="flex items-center gap-2 border-b border-zinc-800 px-3 py-2 text-xs text-zinc-300">
+        <div className="flex items-center gap-2 border-b border-theme-border px-3 py-2 text-xs text-theme-text">
           <FileText className="h-4 w-4 text-indigo-400" />
 
           <span className="max-w-xs truncate">
@@ -87,7 +96,7 @@ export default function ChatComposer({
           <button
             type="button"
             onClick={handleRemoveFile}
-            className="ml-auto text-zinc-500 hover:text-zinc-300"
+            className="ml-auto flex h-6 w-6 items-center justify-center rounded-md text-theme-muted transition hover:bg-theme-tertiary hover:text-theme-text"
             title="Remove attachment"
           >
             <X className="h-3.5 w-3.5" />
@@ -95,35 +104,39 @@ export default function ChatComposer({
         </div>
       )}
 
-      {/* Textarea */}
       <textarea
         value={input}
-        onChange={(event: ChangeEvent<HTMLTextAreaElement>) =>
-          setInput(event.target.value)
-        }
+        onChange={(
+          event: ChangeEvent<HTMLTextAreaElement>
+        ) => setInput(event.target.value)}
         onKeyDown={handleKeyDown}
         placeholder="Ask Sentinel AI anything..."
         rows={1}
         disabled={disabled}
-        className="max-h-32 w-full resize-none bg-transparent px-4 py-3 text-xs text-zinc-100 outline-none placeholder:text-zinc-500 scrollbar-thin scrollbar-thumb-zinc-800"
+        className="max-h-32 w-full resize-none bg-transparent px-4 py-3 text-xs text-theme-text outline-none placeholder:text-theme-muted scrollbar-thin"
       />
 
-      {/* Bottom bar */}
-      <div className="flex items-center justify-between border-t border-zinc-800/40 px-3 py-2">
+      <div className="flex items-center justify-between border-t border-theme-border px-3 py-2">
         <div className="flex items-center gap-1">
           <input
             ref={fileInputRef}
             type="file"
             onChange={handleFileChange}
             className="hidden"
-            disabled={disabled || isGenerating}
+            disabled={
+              disabled || isGenerating
+            }
           />
 
           <button
             type="button"
-            onClick={() => fileInputRef.current?.click()}
-            disabled={disabled || isGenerating}
-            className="flex h-7 w-7 items-center justify-center rounded-lg text-zinc-400 transition hover:bg-zinc-800 hover:text-zinc-200 disabled:cursor-not-allowed disabled:opacity-40"
+            onClick={() =>
+              fileInputRef.current?.click()
+            }
+            disabled={
+              disabled || isGenerating
+            }
+            className="flex h-7 w-7 items-center justify-center rounded-lg text-theme-muted transition hover:bg-theme-tertiary hover:text-theme-text disabled:cursor-not-allowed disabled:opacity-40"
             title="Attach file or image"
           >
             <Paperclip className="h-4 w-4" />
@@ -132,19 +145,18 @@ export default function ChatComposer({
           <button
             type="button"
             disabled
-            className="flex h-7 w-7 items-center justify-center rounded-lg text-zinc-400 opacity-50"
+            className="flex h-7 w-7 items-center justify-center rounded-lg text-theme-muted opacity-50"
             title="Voice input coming soon"
           >
             <Mic className="h-4 w-4" />
           </button>
         </div>
 
-        {/* Send / Stop */}
         {isGenerating ? (
           <button
             type="button"
             onClick={onStop}
-            className="flex h-7 w-7 items-center justify-center rounded-lg bg-zinc-800 text-zinc-200 transition hover:bg-zinc-700"
+            className="flex h-7 w-7 items-center justify-center rounded-lg bg-theme-tertiary text-theme-text transition hover:opacity-80"
             title="Stop generating"
           >
             <Square className="h-3.5 w-3.5 fill-current" />
@@ -157,7 +169,7 @@ export default function ChatComposer({
               (!input.trim() && !attachedFile) ||
               disabled
             }
-            className="flex h-7 w-7 items-center justify-center rounded-lg bg-indigo-600 text-white shadow transition hover:bg-indigo-500 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-indigo-600"
+            className="flex h-7 w-7 items-center justify-center rounded-lg bg-indigo-600 text-white shadow transition hover:bg-indigo-500 disabled:cursor-not-allowed disabled:opacity-40"
             title="Send message"
           >
             <Send className="h-3.5 w-3.5" />
