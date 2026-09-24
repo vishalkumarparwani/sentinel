@@ -1,15 +1,11 @@
 import type { AIModel, Conversation, Message } from "../types/ai";
 
-const API_ROOT =
-  import.meta.env.VITE_API_URL || "http://localhost:8000";
+const API_ROOT = "http://localhost:8000";
 
 const API_BASE = `${API_ROOT.replace(/\/$/, "")}/ai`;
 
 function getToken(): string | null {
-  return (
-    localStorage.getItem("access_token") ||
-    localStorage.getItem("token")
-  );
+  return localStorage.getItem("authToken");
 }
 
 function getHeaders(): HeadersInit {
@@ -121,10 +117,10 @@ export interface StreamMessagePayload {
 
 export interface StreamChunk {
   type:
-    | "message_start"
-    | "content"
-    | "message_end"
-    | "error";
+  | "message_start"
+  | "content"
+  | "message_end"
+  | "error";
 
   message_id?: number;
   content?: string;

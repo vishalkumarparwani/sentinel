@@ -1,4 +1,5 @@
 import React from "react";
+import ReactMarkdown from "react-markdown";
 import { Bot, User, Copy, Check } from "lucide-react";
 import { useState } from "react";
 import type { Message } from "../../types/ai";
@@ -25,9 +26,8 @@ export default function MessageItem({
 
   return (
     <div
-      className={`group mb-6 flex gap-3 ${
-        isUser ? "justify-end" : "justify-start"
-      }`}
+      className={`group mb-6 flex gap-3 ${isUser ? "justify-end" : "justify-start"
+        }`}
     >
       {!isUser && (
         <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10">
@@ -36,14 +36,13 @@ export default function MessageItem({
       )}
 
       <div
-        className={`max-w-[80%] ${
-          isUser
+        className={`max-w-[80%] ${isUser
             ? "rounded-2xl rounded-br-md bg-primary px-4 py-3 text-primary-foreground"
             : "rounded-2xl rounded-bl-md bg-theme-secondary px-4 py-3"
-        }`}
+          }`}
       >
-        <div className="whitespace-pre-wrap break-words text-sm leading-6">
-          {message.content}
+        <div className="whitespace-pre-wrap wrap-break-words text-sm leading-6">
+          <ReactMarkdown>{message.content}</ReactMarkdown>
 
           {message.isStreaming && (
             <span className="ml-1 inline-block animate-pulse">
