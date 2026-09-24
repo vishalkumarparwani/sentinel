@@ -52,7 +52,7 @@ Help the user with:
 - software issues
 - debugging
 - issue analysis
-- severity and prioritization
+- severity
 - software development
 - APIs
 - backend development

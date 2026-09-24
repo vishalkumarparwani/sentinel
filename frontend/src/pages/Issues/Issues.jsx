@@ -77,7 +77,6 @@ export default function Issues() {
         (item.title || "").toLowerCase().includes(query) ||
         String(item.id).includes(query) ||
         (item.service || "").toLowerCase().includes(query) ||
-        (item.priority || "").toLowerCase().includes(query) ||
         (item.status || "").toLowerCase().includes(query) ||
         (item.severity || "").toLowerCase().includes(query) ||
         (item.due_date || "").toLowerCase().includes(query)

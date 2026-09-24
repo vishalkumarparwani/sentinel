@@ -29,7 +29,6 @@ export default function IssueForm({ initialValues, onSubmit, onCancel }) {
         onSubmit({
             ...formData,
             description: formData.description || "",
-            priority: formData.priority || "Medium",
             status: formData.status || "planning",
             due_date: formData.due_date || null,
         });

@@ -6,9 +6,9 @@ Sentinel is an issue-tracking platform built around a simple idea: bugs and prob
 
 ## Features
 
-- **Issue tracking** — create, edit, delete, and filter issues by status (Planning / In Progress / Done), search across title, service, priority, and severity
+- **Issue tracking** — create, edit, delete, and filter issues by status (Planning / In Progress / Done), search across title, service, and severity
 - **Services view** — issues grouped by the service they affect, with open and critical issue counts per service, click-through to inspect any service's issues
-- **AI Issue Triage** — paste a raw bug report and get back a structured issue (title, service, priority, severity, reproduction steps) extracted by an LLM, with a review step before saving
+- **AI Issue Triage** — paste a raw bug report and get back a structured issue (title, service, severity, reproduction steps) extracted by an LLM, with a review step before saving
 - **Authentication** — JWT-based register/login, protected routes on the frontend
 - **Dashboard** — live stats computed from real issue data (total, critical, open, services affected), recent issues list, deep-work timer
 - **Search & highlight** — search issues from the navbar and jump straight to the matching row, highlighted on arrival

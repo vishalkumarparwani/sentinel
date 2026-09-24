@@ -41,7 +41,6 @@ export default function SearchBar() {
         (item.title || '').toLowerCase().includes(q) ||
         String(item.id).includes(q) ||
         (item.service || '').toLowerCase().includes(q) ||
-        (item.priority || '').toLowerCase().includes(q) ||
         (item.status || '').toLowerCase().includes(q) ||
         (item.severity || '').toLowerCase().includes(q)
       )
