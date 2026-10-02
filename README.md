@@ -88,7 +88,7 @@ docker compose up --build
 ```
 
 For Local PC:
-- Frontend: http://localhost:5173
+- Frontend: http://localhost:5174
 - Backend: http://127.0.0.1:8000
 
 On first run, register an account at `/register` — all routes except Login/Register require authentication.
