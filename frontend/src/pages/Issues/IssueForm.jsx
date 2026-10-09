@@ -87,7 +87,6 @@ export default function IssueForm({ initialValues, onSubmit, onCancel }) {
                 </div>
             </div>
 
-            {/* Title Field Container */}
             <div className="group rounded-xl border border-theme-border/70 bg-theme-primary/40 p-3 transition-all duration-300 focus-within:border-sky-500/70 focus-within:ring-2 focus-within:ring-sky-500/20 hover:border-theme-border">
                 <label className="block text-[10px] font-bold uppercase tracking-wider text-sky-400 mb-1">
                     Issue Title <span className="text-red-400">*</span>
@@ -102,7 +101,6 @@ export default function IssueForm({ initialValues, onSubmit, onCancel }) {
                 />
             </div>
 
-            {/* Severity Pill Selector (Replaces Dropdown) */}
             <div className="rounded-xl border border-theme-border/70 bg-theme-primary/40 p-3 transition-all duration-300 hover:border-theme-border">
                 <label className="block text-[10px] font-bold uppercase tracking-wider text-theme-muted mb-2">
                     Severity Level
@@ -128,9 +126,7 @@ export default function IssueForm({ initialValues, onSubmit, onCancel }) {
                 </div>
             </div>
 
-            {/* Grid Row: Service & Due Date */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {/* Service Field Container */}
                 <div className="group rounded-xl border border-theme-border/70 bg-theme-primary/40 p-3 transition-all duration-300 focus-within:border-sky-500/70 focus-within:ring-2 focus-within:ring-sky-500/20 hover:border-theme-border">
                     <label className="block text-[10px] font-bold uppercase tracking-wider text-theme-muted mb-1">
                         Service
@@ -144,7 +140,6 @@ export default function IssueForm({ initialValues, onSubmit, onCancel }) {
                     />
                 </div>
 
-                {/* Due Date Field Container */}
                 <div className="group rounded-xl border border-theme-border/70 bg-theme-primary/40 p-3 transition-all duration-300 focus-within:border-sky-500/70 focus-within:ring-2 focus-within:ring-sky-500/20 hover:border-theme-border">
                     <label className="block text-[10px] font-bold uppercase tracking-wider text-theme-muted mb-1">
                         Due Date

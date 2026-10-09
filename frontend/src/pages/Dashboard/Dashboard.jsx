@@ -34,10 +34,6 @@ export default function Dashboard() {
     fetchData();
   }, []);
 
-  // --------------------------------------------------
-  // Issue Statistics
-  // --------------------------------------------------
-
   const total = issues.length;
 
   const weekAgo = new Date();
@@ -70,19 +66,25 @@ export default function Dashboard() {
       ? Math.round((openCount / total) * 100)
       : 0;
 
+  const isCritical = (s) => {
+    const val = (s || "").toLowerCase();
+    return val === "p1" || val === "critical";
+  };
+
+  const isHigh = (s) => {
+    const val = (s || "").toLowerCase();
+    return val === "p2" || val === "high";
+  };
+
   const p1Open = openIssues.filter(
-    (i) => i.severity === "P1"
+    (i) => isCritical(i.severity)
   ).length;
 
   const p2Open = openIssues.filter(
-    (i) => i.severity === "P2"
+    (i) => isHigh(i.severity)
   ).length;
 
   const criticalUnresolved = p1Open + p2Open;
-
-  // --------------------------------------------------
-  // Services
-  // --------------------------------------------------
 
   const serviceNames = [
     ...new Set(
@@ -99,7 +101,7 @@ export default function Dashboard() {
       issues.some(
         (i) =>
           i.service === name &&
-          i.severity === "P1" &&
+          isCritical(i.severity) &&
           i.status !== "done"
       )
   ).length;
@@ -118,10 +120,6 @@ export default function Dashboard() {
     }
   });
 
-  // --------------------------------------------------
-  // Dashboard Cards
-  // --------------------------------------------------
-
   const stats = [
     {
       title: "Total Issues",
@@ -135,32 +133,24 @@ export default function Dashboard() {
           : null,
       breakdown: `${planning} Planning · ${inProgress} In Progress · ${done} Done`,
       icon: GitBranch,
-
-      // Theme-neutral background works in both themes.
       iconStyle:
         "text-sky-500 bg-theme-tertiary border border-theme-border",
     },
-
     {
       title: "Critical Issues",
       value: criticalUnresolved,
-
       valueColor:
         criticalUnresolved > 0
           ? "text-rose-500"
           : "text-theme-text",
-
       breakdown: `P1: ${p1Open} · P2: ${p2Open}`,
       icon: AlertTriangle,
-
       iconStyle:
         "text-rose-500 bg-theme-tertiary border border-theme-border",
     },
-
     {
       title: "Open Issues",
       value: openCount,
-
       trend:
         total > 0
           ? {
@@ -168,18 +158,14 @@ export default function Dashboard() {
               tone: "success",
             }
           : null,
-
       breakdown: `${planning} Planning · ${inProgress} In Progress`,
       icon: Clock3,
-
       iconStyle:
         "text-amber-500 bg-theme-tertiary border border-theme-border",
     },
-
     {
       title: "Services Affected",
       value: servicesAffected,
-
       breakdown:
         servicesWithCritical > 0
           ? `${servicesWithCritical} with critical issues${
@@ -190,28 +176,23 @@ export default function Dashboard() {
           : mostAffected
           ? `Most affected: ${mostAffected}`
           : "No services affected",
-
       icon: Boxes,
-
       iconStyle:
         "text-violet-500 bg-theme-tertiary border border-theme-border",
     },
   ];
 
-  // --------------------------------------------------
-  // Recent Issues
-  // --------------------------------------------------
-
-  const severityWeight = {
-    P1: 1,
-    P2: 2,
-    P3: 3,
-    P4: 4,
+  const getSeverityWeight = (s) => {
+    const val = (s || "").toLowerCase();
+    if (val === "p1" || val === "critical") return 1;
+    if (val === "p2" || val === "high") return 2;
+    if (val === "p3" || val === "medium") return 3;
+    if (val === "p4" || val === "low") return 4;
+    return 99;
   };
 
   const recentIssues = [...issues]
     .sort((a, b) => {
-      // Open issues first
       if (a.status === "done" && b.status !== "done") {
         return 1;
       }
@@ -220,28 +201,19 @@ export default function Dashboard() {
         return -1;
       }
 
-      // Then severity
-      const severityA =
-        severityWeight[a.severity] || 99;
-
-      const severityB =
-        severityWeight[b.severity] || 99;
+      const severityA = getSeverityWeight(a.severity);
+      const severityB = getSeverityWeight(b.severity);
 
       if (severityA !== severityB) {
         return severityA - severityB;
       }
 
-      // Finally newest
       return (
         new Date(b.created_at) -
         new Date(a.created_at)
       );
     })
     .slice(0, 4);
-
-  // --------------------------------------------------
-  // Engineering Insight
-  // --------------------------------------------------
 
   const insightText =
     criticalUnresolved > 0
@@ -257,10 +229,6 @@ export default function Dashboard() {
           servicesAffected !== 1 ? "s" : ""
         }.`
       : "No open issues right now. Your engineering backlog is clear.";
-
-  // --------------------------------------------------
-  // Engineering Risk
-  // --------------------------------------------------
 
   let riskLevel = "Low";
   let riskDescription =
@@ -292,10 +260,6 @@ export default function Dashboard() {
 
   const RiskIcon = riskIcon;
 
-  // --------------------------------------------------
-  // Most Affected Services
-  // --------------------------------------------------
-
   const serviceRisk = serviceNames
     .map((name) => {
       const serviceIssues = issues.filter(
@@ -304,13 +268,8 @@ export default function Dashboard() {
           i.status !== "done"
       );
 
-      const p1 = serviceIssues.filter(
-        (i) => i.severity === "P1"
-      ).length;
-
-      const p2 = serviceIssues.filter(
-        (i) => i.severity === "P2"
-      ).length;
+      const p1 = serviceIssues.filter((i) => isCritical(i.severity)).length;
+      const p2 = serviceIssues.filter((i) => isHigh(i.severity)).length;
 
       const risk =
         p1 > 0
@@ -342,11 +301,6 @@ export default function Dashboard() {
 
   return (
     <div className="mx-auto mt-6 max-w-7xl space-y-8 px-8 xl:px-12">
-
-      {/* ------------------------------------------------
-          Header
-      ------------------------------------------------ */}
-
       <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight text-theme-text">
@@ -367,19 +321,11 @@ export default function Dashboard() {
         </button>
       </div>
 
-      {/* ------------------------------------------------
-          Error
-      ------------------------------------------------ */}
-
       {error && (
         <div className="rounded-lg border border-rose-900/40 bg-rose-950/20 px-4 py-2.5 text-xs text-rose-400">
           {error}
         </div>
       )}
-
-      {/* ------------------------------------------------
-          AI Engineering Insight
-      ------------------------------------------------ */}
 
       <div className="flex items-start gap-4 rounded-2xl border border-theme-border bg-theme-secondary/50 p-6 shadow-sm">
         <div className="shrink-0 rounded-xl border border-theme-border bg-theme-tertiary p-3 text-indigo-500">
@@ -403,10 +349,6 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* ------------------------------------------------
-          Statistics
-      ------------------------------------------------ */}
-
       <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
         {stats.map((stat, index) => (
           <DashboardCard
@@ -422,14 +364,8 @@ export default function Dashboard() {
         ))}
       </div>
 
-      {/* ------------------------------------------------
-          Recent Issues + Engineering Risk
-      ------------------------------------------------ */}
-
       <div className="grid gap-6 lg:grid-cols-3">
-
         <div className="rounded-2xl border border-theme-border bg-theme-secondary/30 p-6 lg:col-span-2">
-
           <div className="flex items-center justify-between border-b border-theme-border pb-5">
             <div>
               <h3 className="text-lg font-semibold text-theme-text">
@@ -451,7 +387,6 @@ export default function Dashboard() {
           </div>
 
           <div className="mt-5 space-y-1 divide-y divide-theme-border/60">
-
             {recentIssues.length === 0 ? (
               <div className="py-10 text-center">
                 <CheckCircle2 className="mx-auto h-6 w-6 text-emerald-500" />
@@ -472,14 +407,10 @@ export default function Dashboard() {
                 />
               ))
             )}
-
           </div>
         </div>
 
-                  {/* Engineering Risk */}
-
         <div className="rounded-2xl border border-theme-border bg-theme-secondary/30 p-6">
-
           <div className="flex items-center justify-between border-b border-theme-border pb-5">
             <div className="flex items-center gap-2.5">
               <div className="rounded-lg border border-theme-border bg-theme-tertiary p-2">
@@ -505,8 +436,6 @@ export default function Dashboard() {
               {riskLevel}
             </span>
           </div>
-
-          {/* Risk summary */}
 
           <div className="py-6">
             <div className="flex items-end justify-between">
@@ -554,10 +483,7 @@ export default function Dashboard() {
             </p>
           </div>
 
-          {/* Services */}
-
           <div className="border-t border-theme-border pt-5">
-
             <div className="flex items-center justify-between">
               <h4 className="text-xs font-semibold text-theme-text">
                 Service Risk
@@ -569,7 +495,6 @@ export default function Dashboard() {
             </div>
 
             <div className="mt-4 space-y-3">
-
               {serviceRisk.length === 0 ? (
                 <div className="rounded-lg border border-theme-border bg-theme-primary/40 px-3 py-4 text-center">
                   <p className="text-xs text-theme-muted">
@@ -609,7 +534,6 @@ export default function Dashboard() {
                   </div>
                 ))
               )}
-
             </div>
           </div>
 
@@ -620,7 +544,6 @@ export default function Dashboard() {
             <span>Review engineering issues</span>
             <ArrowUpRight size={13} />
           </Link>
-
         </div>
       </div>
     </div>

@@ -33,7 +33,6 @@ export default function Issues() {
     });
   }, []);
 
-  // Highlight the issue for a brief moment when navigated from another page
   useEffect(() => {
     if (highlightedId === null) return;
 
@@ -44,7 +43,6 @@ export default function Issues() {
     return () => clearTimeout(timer);
   }, [highlightedId]);
 
-  // Load issues on component mount
   useEffect(() => {
     async function fetchData() {
       try {
@@ -62,7 +60,6 @@ export default function Issues() {
     setIssues(data);
   }
 
-  // Filter issues based on status and search query
   const filteredIssues = issues
     .filter((item) => {
       if (statusFilter === "planning") return item.status === "planning";
@@ -105,7 +102,7 @@ export default function Issues() {
     await deleteIssue(id);
     await loadIssues();
   }
-  // Handle status toggle for an issue
+
   async function handleToggleStatus(item, selectedStatus) {
     let nextStatus = selectedStatus || "planning";
 
@@ -113,7 +110,6 @@ export default function Issues() {
     await loadIssues();
   }
 
-  // Issues Refresh functionality
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [refreshSuccess, setRefreshSuccess] = useState(false);
 

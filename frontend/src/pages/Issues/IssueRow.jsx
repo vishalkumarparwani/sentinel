@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   Clock,
   CircleDot,
@@ -6,7 +6,9 @@ import {
   Trash2,
   Pencil,
   ChevronRight,
+  ChevronDown,
   Calendar,
+  FileText,
 } from "lucide-react";
 
 const statusConfig = {
@@ -59,6 +61,8 @@ export default function IssueRow({
   onEdit,
   onDelete,
 }) {
+  const [showDescription, setShowDescription] = useState(false);
+
   const status = statusConfig[item.status] || statusConfig.planning;
   const StatusIcon = statusIcons[item.status] || CircleDot;
 
@@ -81,18 +85,21 @@ export default function IssueRow({
 
   return (
     <div
-      className={`group relative rounded-xl border p-4 transition-all duration-300 ${isHighlighted
-        ? "border-amber-500/60 bg-amber-500/10 ring-1 ring-amber-500/40"
-        : "border-theme-border/80 bg-theme-secondary/50 hover:border-theme-border hover:bg-theme-secondary/90"
-        }`}
+      className={`group relative rounded-xl border p-4 transition-all duration-300 ${
+        isHighlighted
+          ? "border-amber-500/60 bg-amber-500/10 ring-1 ring-amber-500/40 shadow-lg shadow-amber-500/5"
+          : "border-theme-border/80 bg-theme-secondary/50 hover:border-theme-border hover:bg-theme-secondary/90"
+      }`}
     >
+      {/* Top Header Row */}
       <div className="flex items-start justify-between gap-3">
         <h3 className="wrap-anywhere text-[14px] font-semibold leading-snug tracking-tight text-theme-text">
           {item.title}
         </h3>
 
+        {/* Action Controls & Status Selector */}
         <div className="flex items-center gap-2 shrink-0">
-          <div className="flex items-center gap-1 rounded-lg border border-theme-border bg-theme-primary/80 p-1">
+          <div className="flex items-center gap-1 rounded-lg border border-theme-border bg-theme-primary/80 p-1 shadow-sm">
             <button
               type="button"
               onClick={onEdit}
@@ -127,7 +134,7 @@ export default function IssueRow({
             <select
               value={item.status}
               onChange={(e) => onToggleStatus(e.target.value)}
-              className={`appearance-none flex shrink-0 items-center rounded-md border py-1.5 pl-7 pr-7 font-mono text-[10px] font-medium transition-all ${status.color}`}
+              className={`appearance-none flex shrink-0 items-center rounded-md border py-1.5 pl-7 pr-7 font-mono text-[10px] font-medium transition-all cursor-pointer ${status.color}`}
             >
               <option
                 value="planning"
@@ -159,7 +166,8 @@ export default function IssueRow({
         </div>
       </div>
 
-      <div className="mt-2 flex items-center gap-2 flex-wrap">
+      {/* Metadata Badges Row */}
+      <div className="mt-2.5 flex items-center gap-2 flex-wrap">
         <span className="font-mono text-[11px] font-semibold text-theme-muted transition-colors hover:text-theme-text">
           ISS-{item.id}
         </span>
@@ -184,8 +192,40 @@ export default function IssueRow({
             {item.due_date}
           </span>
         )}
+
+        {/* Toggle Description Button */}
+        {item.description && (
+          <button
+            type="button"
+            onClick={() => setShowDescription((prev) => !prev)}
+            className="inline-flex items-center gap-1.5 rounded-md border border-sky-500/30 bg-sky-500/10 px-2 py-0.5 font-mono text-[10px] font-medium text-sky-400 hover:bg-sky-500/20 hover:border-sky-500/50 transition-all duration-200 active:scale-95 ml-auto"
+          >
+            <FileText size={10} />
+            <span>{showDescription ? "Hide Description" : "Show Description"}</span>
+            <ChevronDown
+              size={10}
+              className={`transition-transform duration-200 ${
+                showDescription ? "rotate-180" : ""
+              }`}
+            />
+          </button>
+        )}
       </div>
 
+      {/* Expandable Description Box */}
+      {item.description && showDescription && (
+        <div className="mt-3.5 rounded-lg border border-sky-500/20 bg-theme-primary/60 p-3 shadow-inner transition-all duration-200 animate-in fade-in slide-in-from-top-1">
+          <div className="mb-1 flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-sky-400">
+            <FileText size={11} />
+            <span>Description</span>
+          </div>
+          <p className="wrap-anywhere text-xs leading-relaxed text-theme-text/90 whitespace-pre-line">
+            {item.description}
+          </p>
+        </div>
+      )}
+
+      {/* Reproduction Steps Section */}
       {stepsList.length > 0 && (
         <div className="mt-3.5 border-t border-theme-border/50 pt-3">
           <div className="mb-1.5 flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-theme-muted">
