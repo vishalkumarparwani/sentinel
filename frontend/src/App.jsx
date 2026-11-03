@@ -11,7 +11,7 @@ import Issues from "./pages/Issues/Issues";
 import Services from "./pages/Services/Services";
 import Triage from "./pages/Triage/Triage";
 import Settings from "./pages/Settings/Settings";
-import AIAssistantPage from "./pages/AIAssistant/AIAssistantPage";
+import AIAssistantPage from "./components/AISidebar";
 
 function ProtectedRoute({ children }) {
   const { token } = useAuth();

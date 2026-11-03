@@ -11,25 +11,6 @@ import {
     Sparkles,
 } from "lucide-react";
 
-import type { AIModel, Conversation } from "../types/ai";
-
-interface AISidebarProps {
-    isOpen: boolean;
-    onToggle: () => void;
-    conversations: Conversation[];
-    activeConversationId: number | null;
-    isLoading: boolean;
-    models: AIModel[];
-    selectedModel: string;
-    onSelectModel: (modelId: string) => void;
-    onNewChat: () => void;
-    onSelectConversation: (id: number) => void;
-    onRenameConversation: (id: number, newTitle: string) => void;
-    onDeleteConversation: (id: number) => void;
-}
-
-type SidebarView = "chats" | "models";
-
 export default function AISidebar({
     isOpen,
     onToggle,
@@ -43,7 +24,7 @@ export default function AISidebar({
     onSelectConversation,
     onRenameConversation,
     onDeleteConversation,
-}: AISidebarProps): React.ReactElement {
+}) {
     const [view, setView] =
         useState<SidebarView>("chats");
 
@@ -70,18 +51,17 @@ export default function AISidebar({
     }, [conversations, search]);
 
     const startRename = (
-        conversation: Conversation
-    ): void => {
+        conversation) => {
         setEditingId(conversation.id);
         setEditingTitle(conversation.title);
     };
 
-    const cancelRename = (): void => {
+    const cancelRename = () => {
         setEditingId(null);
         setEditingTitle("");
     };
 
-    const saveRename = (): void => {
+    const saveRename = () => {
         if (editingId === null) return;
 
         const title = editingTitle.trim();
@@ -93,9 +73,7 @@ export default function AISidebar({
         cancelRename();
     };
 
-    const handleRenameKeyDown = (
-        event: React.KeyboardEvent<HTMLInputElement>
-    ): void => {
+    const handleRenameKeyDown = (event) => {
         if (event.key === "Enter") {
             event.preventDefault();
             saveRename();
@@ -107,7 +85,7 @@ export default function AISidebar({
         }
     };
 
-    const confirmDelete = (): void => {
+    const confirmDelete = () => {
         if (!deleteTarget) return;
 
         onDeleteConversation(deleteTarget.id);
@@ -131,7 +109,7 @@ export default function AISidebar({
 
     return (
         <>
-            <aside className="flex w-[260px] shrink-0 flex-col border-r border-black/10 bg-theme-primary dark:border-white/10">
+            <aside className="flex w-260px shrink-0 flex-col border-r border-black/10 bg-theme-primary dark:border-white/10">
                 <div className="flex h-14 items-center justify-between border-b border-black/10 px-2.5 dark:border-white/10">
                     <button
                         type="button"
@@ -183,7 +161,7 @@ export default function AISidebar({
                             <button
                                 type="button"
                                 onClick={onNewChat}
-                                className="flex w-full items-center justify-center gap-2 rounded-xl border border-black/10 bg-black/[0.025] px-3 py-2.5 text-xs font-medium text-theme-text/75 transition hover:bg-black/[0.05] dark:border-white/10 dark:bg-white/[0.025] dark:hover:bg-white/[0.05]"
+                                className="flex w-full items-center justify-center gap-2 rounded-xl border border-black/10 bg-black/25 px-3 py-2.5 text-xs font-medium text-theme-text/75 transition hover:bg-black/40 dark:border-white/10 dark:bg-white/25 dark:hover:bg-white/40"
                             >
                                 <Plus className="h-3.5 w-3.5" />
                                 New Chat
@@ -191,7 +169,7 @@ export default function AISidebar({
                         </div>
 
                         <div className="px-2.5 pb-3">
-                            <div className="flex items-center gap-2 rounded-xl border border-black/10 bg-black/[0.025] px-3 dark:border-white/10 dark:bg-white/[0.025]">
+                            <div className="flex items-center gap-2 rounded-xl border border-black/10 bg-black/25 px-3 dark:border-white/10 dark:bg-white/25">
                                 <Search className="h-3.5 w-3.5 shrink-0 text-theme-text/35" />
 
                                 <input
@@ -257,8 +235,8 @@ export default function AISidebar({
                                                         }
                                                         className={`group relative flex min-h-10 items-center rounded-lg transition ${
                                                             isActive
-                                                                ? "bg-black/[0.07] dark:bg-white/[0.08]"
-                                                                : "hover:bg-black/[0.035] dark:hover:bg-white/[0.04]"
+                                                                ? "bg-black/[0.07] dark:bg-white/8"
+                                                                : "hover:bg-black/[0.035] dark:hover:bg-white/4"
                                                         }`}
                                                     >
                                                         {isEditing ? (
@@ -374,7 +352,7 @@ export default function AISidebar({
                                         className={`w-full rounded-xl border p-3 text-left transition ${
                                             isSelected
                                                 ? "border-indigo-500/30 bg-indigo-500/10"
-                                                : "border-black/10 bg-black/[0.025] hover:bg-black/[0.05] dark:border-white/10 dark:bg-white/[0.025] dark:hover:bg-white/[0.05]"
+                                                : "border-black/10 bg-black/25 hover:bg-black/5 dark:border-white/10 dark:bg-white/25 dark:hover:bg-white/5"
                                         } ${
                                             !isAvailable
                                                 ? "cursor-not-allowed opacity-50"
@@ -441,7 +419,7 @@ export default function AISidebar({
 
             {deleteTarget && (
                 <div
-                    className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 px-4 backdrop-blur-sm"
+                    className="fixed inset-0 z-100 flex items-center justify-center bg-black/50 px-4 backdrop-blur-sm"
                     onMouseDown={(event) => {
                         if (
                             event.target ===
@@ -470,7 +448,7 @@ export default function AISidebar({
                                 onClick={() =>
                                     setDeleteTarget(null)
                                 }
-                                className="rounded-lg border border-black/10 bg-black/[0.04] px-4 py-2 text-xs font-medium text-theme-text/70 transition hover:bg-black/[0.08] dark:border-white/10 dark:bg-white/[0.04] dark:hover:bg-white/[0.08]"
+                                className="rounded-lg border border-black/10 bg-black/4 px-4 py-2 text-xs font-medium text-theme-text/70 transition hover:bg-black/8 dark:border-white/10 dark:bg-white/4 dark:hover:bg-white/8"
                             >
                                 Cancel
                             </button>

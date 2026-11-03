@@ -14,9 +14,6 @@ export const AuthProvider = ({ children }) => {
   );
 
   const [loading, setLoading] = useState(false);
-
-  // Apply the user's saved theme when authenticated,
-  // otherwise use the theme selected on the login/register page.
   useEffect(() => {
     const theme =
       user?.theme ||
@@ -36,7 +33,6 @@ export const AuthProvider = ({ children }) => {
     localStorage.setItem('authToken', authToken);
     localStorage.setItem('user', JSON.stringify(userData));
 
-    // The authenticated user's backend theme takes priority.
     const theme = userData?.theme || 'dark';
 
     document.documentElement.classList.toggle(
@@ -53,9 +49,7 @@ export const AuthProvider = ({ children }) => {
 
     localStorage.removeItem('authToken');
     localStorage.removeItem('user');
-
-    // Keep the user's last selected theme for the
-    // unauthenticated Login/Register pages.
+    
     const theme = localStorage.getItem('theme') || 'dark';
 
     document.documentElement.classList.toggle(
