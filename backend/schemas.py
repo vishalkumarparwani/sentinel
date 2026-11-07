@@ -1,16 +1,12 @@
-from datetime import datetime
-from typing import Optional
+from datetime import date, datetime
+from enum import Enum
 
 from pydantic import BaseModel, EmailStr
 
-# ==============================================================================
-# Authentication & User Schemas
-# ==============================================================================
 
 class UserCreate(BaseModel):
     email: EmailStr
     password: str
-    full_name: Optional[str] = None
 
 
 class UserLogin(BaseModel):
@@ -19,100 +15,79 @@ class UserLogin(BaseModel):
 
 
 class UserOut(BaseModel):
-    id: int
+    id: str
     email: EmailStr
-    theme: str = "dark"
+    theme: str
 
     class Config:
         from_attributes = True
+
+
+class Token(BaseModel):
+    access_token: str
+    token_type: str
+    user: UserOut
 
 
 class UserThemeUpdate(BaseModel):
     theme: str
 
 
-class Token(BaseModel):
-    access_token: str
-    token_type: str = "bearer"
-    user: UserOut
+class IssueStatus(str, Enum):
+    planning = "planning"
+    in_progress = "in_progress"
+    done = "done"
 
 
-class TokenData(BaseModel):
-    user_id: Optional[int] = None
+class IssueSeverity(str, Enum):
+    P1 = "P1"
+    P2 = "P2"
+    P3 = "P3"
+    P4 = "P4"
 
-
-# ==============================================================================
-# Service Schemas
-# ==============================================================================
-
-class ServiceCreate(BaseModel):
-    name: str
-    description: Optional[str] = None
-    status: str = "active"
-
-
-class ServiceOut(BaseModel):
-    id: int
-    name: str
-    description: Optional[str] = None
-    status: str
-    created_at: datetime
-    updated_at: datetime
-
-    class Config:
-        from_attributes = True
-
-
-# ==============================================================================
-# Issue Schemas
-# ==============================================================================
 
 class IssueCreate(BaseModel):
     title: str
-    description: Optional[str] = None
+    description: str | None = None
     service: str
-    due_date: Optional[datetime] = None
-    status: str = "planning"
-    completed: bool = False
-    severity: Optional[str] = "P3"
-    reproduction_steps: Optional[str] = None
+    status: IssueStatus = IssueStatus.planning
+    due_date: date | None = None
+    severity: IssueSeverity = IssueSeverity.P3
+    reproduction_steps: str | None = None
+
+
+class IssueUpdate(BaseModel):
+    title: str
+    description: str | None = None
+    service: str
+    status: str
+    due_date: date | None = None
+    severity: str | None = None
+    reproduction_steps: str | None = None
 
 
 class IssueOut(BaseModel):
     id: int
     title: str
-    description: Optional[str] = None
+    description: str | None = None
     service: str
-    due_date: Optional[datetime] = None
+    severity: str | None = None
     status: str
-    completed: bool
-    severity: Optional[str] = None
-    reproduction_steps: Optional[str] = None
+    due_date: date | None = None
+    reproduction_steps: str | None = None
     created_at: datetime
-    user_id: Optional[int] = None
+    user_id: str | None = None
+    ai_summary: str | None = None
+    ai_severity_reason: str | None = None
+    ai_confidence: float | None = None
 
     class Config:
         from_attributes = True
 
-
-# ==============================================================================
-# AI Schemas
-# ==============================================================================
 
 class AIMessageCreate(BaseModel):
     content: str
     model: str
-
-
-class AIMessageOut(BaseModel):
-    id: int
-    conversation_id: int
-    role: str
-    content: str
-    created_at: datetime
-
-    class Config:
-        from_attributes = True
 
 
 class ConversationCreate(BaseModel):
@@ -121,16 +96,6 @@ class ConversationCreate(BaseModel):
 
 class ConversationRename(BaseModel):
     title: str
-
-
-class ConversationOut(BaseModel):
-    id: int
-    title: str
-    created_at: datetime
-    updated_at: datetime
-
-    class Config:
-        from_attributes = True
 
 
 class AIModelCapabilities(BaseModel):

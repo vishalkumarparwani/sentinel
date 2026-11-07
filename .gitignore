@@ -16,5 +16,5 @@ __pycache__/
 .venv/
 venv/
 
-
+temp_gemini_api_testing.py
 Future_Features.txt

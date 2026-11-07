@@ -1,53 +1,86 @@
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.security import OAuth2PasswordBearer
-from sqlalchemy.orm import Session
 from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.orm import Session
+
 from database import get_db
 from models import User
-from schemas import UserCreate, UserLogin, Token
-from auth import hash_password, verify_password, create_token, decode_token
+from schemas import Token, UserCreate, UserLogin
+from supabase_auth import sign_in, sign_up, user_from_token
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/login")
 
-@router.post("/register", response_model=Token, status_code=201)
-def register(user: UserCreate, db: Session = Depends(get_db)):
-    if db.query(User).filter(User.email == user.email).first():
-        raise HTTPException(status_code=400, detail="Email already registered")
 
-    new_user = User(email=user.email, hashed_password=hash_password(user.password))
+def get_or_create_profile(supabase_user, db):
+    profile = db.query(User).filter(User.id == supabase_user.id).first()
+    if profile:
+        return profile
 
+    profile = User(id=supabase_user.id, email=supabase_user.email)
     try:
-        db.add(new_user)
+        db.add(profile)
         db.commit()
-        db.refresh(new_user)
+        db.refresh(profile)
+        return profile
     except SQLAlchemyError:
         db.rollback()
-        raise HTTPException(status_code=500, detail="Failed to create account")
 
-    token = create_token({"sub": str(new_user.id)})
-    return {"access_token": token, "token_type": "bearer", "user": new_user}
+    profile = db.query(User).filter(User.id == supabase_user.id).first()
+    if not profile:
+        raise HTTPException(status_code=500, detail="Failed to load account")
+    return profile
+
+
+def get_current_user(
+    token: str = Depends(oauth2_scheme),
+    db: Session = Depends(get_db),
+) -> User:
+    try:
+        supabase_user = user_from_token(token)
+    except Exception:
+        raise HTTPException(status_code=401, detail="Could not validate credentials")
+
+    if supabase_user is None:
+        raise HTTPException(status_code=401, detail="Could not validate credentials")
+
+    return get_or_create_profile(supabase_user, db)
+
+
+@router.post("/register", response_model=Token, status_code=201)
+def register(data: UserCreate, db: Session = Depends(get_db)):
+    try:
+        result = sign_up(data.email, data.password)
+    except Exception as error:
+        raise HTTPException(
+            status_code=400,
+            detail=getattr(error, "message", "Could not create account"),
+        )
+
+    if result.user is None or result.session is None:
+        raise HTTPException(
+            status_code=400,
+            detail="Confirm your email, then sign in",
+        )
+
+    profile = get_or_create_profile(result.user, db)
+    return {
+        "access_token": result.session.access_token,
+        "token_type": "bearer",
+        "user": profile,
+    }
+
 
 @router.post("/login", response_model=Token)
-def login(credentials: UserLogin, db: Session = Depends(get_db)):
-    db_user = db.query(User).filter(User.email == credentials.email).first()
-    if not db_user or not verify_password(credentials.password, db_user.hashed_password):
+def login(data: UserLogin, db: Session = Depends(get_db)):
+    try:
+        result = sign_in(data.email, data.password)
+    except Exception:
         raise HTTPException(status_code=401, detail="Invalid credentials")
 
-    token = create_token({"sub": str(db_user.id)})
-    return {"access_token": token, "token_type": "bearer", "user": db_user}
-
-def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)) -> User:
-    credentials_exception = HTTPException(status_code=401, detail="Could not validate credentials")
-    try:
-        payload = decode_token(token)
-        user_id = payload.get("sub")
-        if user_id is None:
-            raise credentials_exception
-    except Exception:
-        raise credentials_exception
-
-    user = db.query(User).filter(User.id == int(user_id)).first()
-    if user is None:
-        raise credentials_exception
-    return user
+    profile = get_or_create_profile(result.user, db)
+    return {
+        "access_token": result.session.access_token,
+        "token_type": "bearer",
+        "user": profile,
+    }
